@@ -91,7 +91,7 @@ namespace Universal_Mod_Organizer
         private void ParseModsList()
         {
             // This parses mod list according to selected profile etc.
-            globalProfiles[activeGame].TryGetValue(activeProfile, out List<string> profileModsList);
+            globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
 
             // Revert to "clean state"
             Helper.ModListForListView.ForEach(u =>
@@ -122,8 +122,9 @@ namespace Universal_Mod_Organizer
 
         private void PopulateModsList()
         {
-            // Stellaris 
-            var myMods = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Paradox Interactive\" + activeGame + @"\mod\";
+            Helper.ModListForListView.Clear();
+
+            var myMods = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Paradox Interactive\" + currentGame + @"\mod\";
 
             try
             {
