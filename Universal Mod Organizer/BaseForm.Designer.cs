@@ -31,8 +31,10 @@
             this.components = new System.ComponentModel.Container();
             this.menuStripBaseForm = new System.Windows.Forms.MenuStrip();
             this.MenuGames = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuGameStellaris = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuGamesCrusaderKings2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.europaUniversalisIVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.heartsOfIronIVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuGameStellaris = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuProfiles = new System.Windows.Forms.ToolStripMenuItem();
             this.ProfileAdd = new System.Windows.Forms.ToolStripMenuItem();
             this.ProfileDelete = new System.Windows.Forms.ToolStripMenuItem();
@@ -78,25 +80,41 @@
             // MenuGames
             // 
             this.MenuGames.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MenuGameStellaris,
-            this.MenuGamesCrusaderKings2});
+            this.MenuGamesCrusaderKings2,
+            this.europaUniversalisIVToolStripMenuItem,
+            this.heartsOfIronIVToolStripMenuItem,
+            this.MenuGameStellaris});
             this.MenuGames.Name = "MenuGames";
             this.MenuGames.Size = new System.Drawing.Size(55, 20);
             this.MenuGames.Text = "Games";
             // 
-            // MenuGameStellaris
-            // 
-            this.MenuGameStellaris.Name = "MenuGameStellaris";
-            this.MenuGameStellaris.Size = new System.Drawing.Size(162, 22);
-            this.MenuGameStellaris.Text = "Stellaris";
-            this.MenuGameStellaris.Click += new System.EventHandler(this.MenuGame_Click);
-            // 
             // MenuGamesCrusaderKings2
             // 
             this.MenuGamesCrusaderKings2.Name = "MenuGamesCrusaderKings2";
-            this.MenuGamesCrusaderKings2.Size = new System.Drawing.Size(162, 22);
+            this.MenuGamesCrusaderKings2.Size = new System.Drawing.Size(183, 22);
             this.MenuGamesCrusaderKings2.Text = "Crusader Kings II";
             this.MenuGamesCrusaderKings2.Click += new System.EventHandler(this.MenuGame_Click);
+            // 
+            // europaUniversalisIVToolStripMenuItem
+            // 
+            this.europaUniversalisIVToolStripMenuItem.Name = "europaUniversalisIVToolStripMenuItem";
+            this.europaUniversalisIVToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.europaUniversalisIVToolStripMenuItem.Text = "Europa Universalis IV";
+            this.europaUniversalisIVToolStripMenuItem.Click += new System.EventHandler(this.MenuGame_Click);
+            // 
+            // heartsOfIronIVToolStripMenuItem
+            // 
+            this.heartsOfIronIVToolStripMenuItem.Name = "heartsOfIronIVToolStripMenuItem";
+            this.heartsOfIronIVToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.heartsOfIronIVToolStripMenuItem.Text = "Hearts of Iron IV";
+            this.heartsOfIronIVToolStripMenuItem.Click += new System.EventHandler(this.MenuGame_Click);
+            // 
+            // MenuGameStellaris
+            // 
+            this.MenuGameStellaris.Name = "MenuGameStellaris";
+            this.MenuGameStellaris.Size = new System.Drawing.Size(183, 22);
+            this.MenuGameStellaris.Text = "Stellaris";
+            this.MenuGameStellaris.Click += new System.EventHandler(this.MenuGame_Click);
             // 
             // MenuProfiles
             // 
@@ -114,28 +132,28 @@
             this.ProfileAdd.Name = "ProfileAdd";
             this.ProfileAdd.Size = new System.Drawing.Size(147, 22);
             this.ProfileAdd.Text = "Add Profile";
-            this.ProfileAdd.Click += new System.EventHandler(this.ProfileAdd_Click);
+            this.ProfileAdd.Click += new System.EventHandler(this.ProfileAddSelect);
             // 
             // ProfileDelete
             // 
             this.ProfileDelete.Name = "ProfileDelete";
             this.ProfileDelete.Size = new System.Drawing.Size(147, 22);
             this.ProfileDelete.Text = "Delete Profile";
-            this.ProfileDelete.Click += new System.EventHandler(this.ProfileDelete_Click);
+            this.ProfileDelete.Click += new System.EventHandler(this.ProfileDeleteSelect);
             // 
             // ProfileImport
             // 
             this.ProfileImport.Name = "ProfileImport";
             this.ProfileImport.Size = new System.Drawing.Size(147, 22);
             this.ProfileImport.Text = "Import Profile";
-            this.ProfileImport.Click += new System.EventHandler(this.ProfileImport_Click);
+            this.ProfileImport.Click += new System.EventHandler(this.ProfileImportSelect);
             // 
             // ProfileExport
             // 
             this.ProfileExport.Name = "ProfileExport";
             this.ProfileExport.Size = new System.Drawing.Size(147, 22);
             this.ProfileExport.Text = "Export Profile";
-            this.ProfileExport.Click += new System.EventHandler(this.ProfileExport_Click);
+            this.ProfileExport.Click += new System.EventHandler(this.ProfileExportSelect);
             // 
             // labelSearch
             // 
@@ -259,7 +277,7 @@
             // columnFilename
             // 
             this.columnFilename.AspectName = "Filename";
-            this.columnFilename.Text = string.Empty;
+            this.columnFilename.Text = "";
             this.columnFilename.Width = 0;
             // 
             // buttonApply
@@ -325,12 +343,11 @@
             this.comboBoxProfile.DropDownWidth = 200;
             this.comboBoxProfile.FormattingEnabled = true;
             this.comboBoxProfile.IntegralHeight = false;
-            this.comboBoxProfile.Items.AddRange(new object[] {
-            "-Default-"});
             this.comboBoxProfile.Location = new System.Drawing.Point(741, 27);
             this.comboBoxProfile.Name = "comboBoxProfile";
             this.comboBoxProfile.Size = new System.Drawing.Size(200, 21);
             this.comboBoxProfile.TabIndex = 91;
+            this.comboBoxProfile.SelectionChangeCommitted += new System.EventHandler(this.ProfileSelectedByUser);
             // 
             // labelGame
             // 
@@ -410,6 +427,8 @@
         private System.Windows.Forms.ToolStripMenuItem ProfileExport;
         private System.Windows.Forms.Label labelGame;
         private System.Windows.Forms.TextBox textBoxGame;
+        private System.Windows.Forms.ToolStripMenuItem europaUniversalisIVToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem heartsOfIronIVToolStripMenuItem;
     }
 }
 
