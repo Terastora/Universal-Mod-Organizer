@@ -21,7 +21,18 @@ namespace Universal_Mod_Organizer
 {
     public sealed class ModsList : IEquatable<ModsList>
     {
-        public ModsList(string enabled = "", string order = "", string name = "N/A", string version = "0.0", string uid = "none", string conflicts = "none", string workshop = "", string filename = "none")
+        public ModsList(
+            string enabled = "",
+            string order = "",
+            string name = "N/A",
+            string version = "0.0",
+            string uid = "none",
+            string conflicts = "none",
+            string workshop = "",
+            string filename = "none",
+            string archive = "",
+            string size = "0",
+            string achivemenets = "???")
         {
             Enabled = enabled;
             Order = order;
@@ -31,6 +42,9 @@ namespace Universal_Mod_Organizer
             Conflicts = conflicts;
             Workshop = workshop;
             Filename = filename;
+            Archive = archive;
+            Size = size;
+            Achivements = achivemenets;
         }
 
         public string Enabled { get; set; }
@@ -47,7 +61,13 @@ namespace Universal_Mod_Organizer
 
         public string Workshop { get; set; }
 
+        public string Archive { get; set; }
+
         public string Filename { get; set; }
+
+        public string Size { get; set; }
+
+        public string Achivements { get; set; }
 
         public bool Equals(ModsList other)
         {

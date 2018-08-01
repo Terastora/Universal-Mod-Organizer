@@ -19,6 +19,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -35,6 +36,7 @@ namespace Universal_Mod_Organizer
 
         // Header Format
         private HeaderFormatStyle headerStyle = new HeaderFormatStyle();
+        private HeaderFormatStyle headerStyleEmoji = new HeaderFormatStyle();
 
         // Fonts
         private Font fontBold = new Font(DefaultFont, FontStyle.Bold);
@@ -49,6 +51,8 @@ namespace Universal_Mod_Organizer
         {
             headerStyle.SetFont(fontBold);
             headerStyle.Hot.Font = fontUnderline;
+
+            headerStyleEmoji.SetFont(fontEmoji);
 
             modListView.EmptyListMsg = "Nothing for now";
 
@@ -78,6 +82,11 @@ namespace Universal_Mod_Organizer
             foreach (OLVColumn item in modListView.Columns)
             {
                 item.HeaderFormatStyle = headerStyle;
+
+                if (item.AspectName.Equals("Enabled"))
+                {
+                    item.HeaderFormatStyle = headerStyleEmoji;
+                }
             }
 
             // Load Mods to List View
@@ -114,7 +123,6 @@ namespace Universal_Mod_Organizer
                     u.Order = idx.ToString("D3");
                 }
             });
-
             modListView.BuildList();
             modListView.Sort(columnOrder, SortOrder.Ascending);
             RenumberOrder();
@@ -157,6 +165,14 @@ namespace Universal_Mod_Organizer
                                 case "remote_file_id":
                                     modListForView.UID = regexGetOnlyLineData.Replace(line, string.Empty);
                                     modListForView.Workshop = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + modListForView.UID;
+                                    break;
+
+                                case "achievement_compatible":
+                                    modListForView.Achivements = regexGetOnlyLineData.Replace(line, string.Empty);
+                                    break;
+
+                                case "archive": // TODO Regex (\\{2}|\/)
+                                    modListForView.Archive = regexGetOnlyLineData.Replace(line, string.Empty).Replace(@"\\", @"\").Replace(@"/", @"\");
                                     break;
 
                                 default:
@@ -357,6 +373,15 @@ namespace Universal_Mod_Organizer
                 if (tooltipText != string.Empty)
                 {
                     e.Text = string.Format("Filepath:'\r\n'{0}'", tooltipText);
+                }
+            }
+
+            if (e.ColumnIndex == columnAchivements.DisplayIndex)
+            {
+                var tooltipText = "This is testing feature.\nSo it still in development mode.\nSend me the mods links or steamID that are not detected.";
+                if (tooltipText != string.Empty)
+                {
+                    e.Text = string.Format("{0}", tooltipText);
                 }
             }
         }
