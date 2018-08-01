@@ -19,6 +19,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -50,6 +51,15 @@ namespace Universal_Mod_Organizer
         private Regex regexGetOnlyLineName = new Regex("^#|=\".+$");
         private Regex regexGetOnlyLineData = new Regex("^(#|[a-z]+|_+)+=\"|\"$");
 
+        private List<string> checksumChangingFoldersAndFiles = new List<string>
+        {
+            "^common/.+$",
+            "^events/.+$",
+            "^map/.+$"
+        };
+
+        private Regex regexChecksum;
+
         // User made changes TODO
         private bool unsavedChanges = false;
 
@@ -57,6 +67,7 @@ namespace Universal_Mod_Organizer
         {
             InitializeComponent();
             defaultFormWidth = Width - columnName.Width + columnName.MinimumWidth;
+            regexChecksum = new Regex(string.Join("|", checksumChangingFoldersAndFiles.Select(item => item)));
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
@@ -466,6 +477,7 @@ namespace Universal_Mod_Organizer
                         }
 
                         sw.WriteLine("#original_name=\"" + item.Name + "\"");
+                        sw.WriteLine("#achievement_compatible=\"" + item.Achivements + "\"");
                     }
                     else if (matchOriginalName.Success)
                     {
@@ -584,6 +596,55 @@ namespace Universal_Mod_Organizer
 
                 unsavedChanges = false;
             }
+        }
+
+        private void CheckAchievementStatus(object sender, EventArgs e)
+        {
+            BackgroundWorkderAchievementChecker.RunWorkerAsync();
+        }
+        
+        private void BackgroundWorkderAchievementCheckerDoWork(object sender, DoWorkEventArgs e)
+        {
+            for (int i = 0; i < Helper.ModListForListView.Count; i++)
+            {
+                BackgroundWorkderAchievementChecker.ReportProgress((int)Math.Round(((double)i / 100) * Helper.ModListForListView.Count, 0));
+                string zipPath = Helper.ModListForListView[i].Archive;
+
+                // Assume that all mods are compatible by default
+                Helper.ModListForListView[i].Achivements = "yes";
+
+                using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+                {
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        // Found entry that probably changes checksum
+                        Match match = regexChecksum.Match(entry.ToString());
+
+                        if (match.Success)
+                        {
+                            Helper.ModListForListView[i].Achivements = "no";
+                        }
+                    }
+                }
+            }
+
+            BackgroundWorkderAchievementChecker.ReportProgress(0);
+        }
+
+        private void BackgroundWorkderAchievementCheckerProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            // Change the value of the ProgressBar to the BackgroundWorker progress.
+            progressBar1.Value = e.ProgressPercentage;
+
+            // Set the text.
+            this.Text = e.ProgressPercentage.ToString();
+        }
+
+        private void BackgroundWorkderAchievementWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            modListView.BuildList();
+            modListView.Sort(columnOrder, SortOrder.Ascending);
+            RenumberOrder();
         }
     }
 }

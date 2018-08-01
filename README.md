@@ -45,3 +45,6 @@ Technically mods get new names. It renames actual mods by adding a prefix (three
 
 v0.4-alpha:
 - Profile Duplication/Rename
+
+v0.5-alpha:
+- Achievements Checker (TEST)
