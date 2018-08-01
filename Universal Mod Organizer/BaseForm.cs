@@ -124,6 +124,8 @@ namespace Universal_Mod_Organizer
 
         private void SettingsSave()
         {
+            unsavedChanges = false;
+
             var docText = new XDocument();
             XElement root = new XElement("Data");
             docText.Add(root);
@@ -202,11 +204,15 @@ namespace Universal_Mod_Organizer
 
         private void ProfileAddSelect(object sender, EventArgs e)
         {
-            string newProfile = Interaction.InputBox("Enter profile name:", "Add profile", "new profile", Location.X + (Width / 3), Location.Y + (Height / 3));
+            // Laziness...
+            var isCopy = ((ToolStripMenuItem)sender).Name.Equals("ProfileCopy");
+            var profileNameInTextBox = isCopy ? (currentProfile + " - Copy") : "new profile";
+            var isAddOrCopy = isCopy ? "Copy" : "Add";
+
+            string newProfile = Interaction.InputBox("Enter profile name:", isAddOrCopy + " profile", profileNameInTextBox, Location.X + (Width / 3), Location.Y + (Height / 3));
 
             if (string.IsNullOrEmpty(newProfile))
             {
-                MessageBox.Show("Can not add.\nEnter valid profile name please.");
                 return;
             }
 
@@ -215,8 +221,18 @@ namespace Universal_Mod_Organizer
             // We did not find any profiles with that name.
             if (index < 0)
             {
-                // Add to global profiles under game name with empty list.
-                globalProfiles[currentGame].Add(newProfile, new List<string>());
+                if (isCopy)
+                {
+                    // Try get existing mod list from current profile (the one we make copy from).
+                    globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
+                    globalProfiles[currentGame].Add(newProfile, profileModsList);
+                }
+                else
+                {
+                    // Add to global profiles under game name with empty list.
+                    globalProfiles[currentGame].Add(newProfile, new List<string>());
+                }
+
                 currentProfile = newProfile;
                 SetComboBoxActiveProfile();
                 ParseModsList();
@@ -237,14 +253,37 @@ namespace Universal_Mod_Organizer
                 return;
             }
 
-            if (MessageBox.Show("Delete '" + comboBoxProfile.SelectedItem + "' profile?", string.Empty, MessageBoxButtons.YesNo) == DialogResult.No)
+            if (MessageBox.Show("Delete '" + comboBoxProfile.SelectedItem + "' profile?", string.Empty, MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                // Remove the dictionary key with the profile and mod list inside
+                globalProfiles[currentGame].Remove(comboBoxProfile.SelectedValue.ToString());
+                currentProfile = "Default";
+                SetComboBoxActiveProfile();
+                ParseModsList();
+            }
+        }
+
+        private void ProfileRenameSelect(object sender, EventArgs e)
+        {
+            string newProfile = Interaction.InputBox("Enter new profile name:", "Rename profile", currentProfile, Location.X + (Width / 3), Location.Y + (Height / 3));
+
+            if (string.IsNullOrEmpty(newProfile))
             {
                 return;
             }
 
-            // Remove the dictionary key with the profile and mod list inside
-            globalProfiles[currentGame].Remove(comboBoxProfile.SelectedValue.ToString());
-            currentProfile = "Default";
+            // Replace activegame activeprofile with new data, while keeping the rest untouched.
+
+            // Get current enabled mod list for profile
+            globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
+
+            // Delete the profile to be renamed
+            globalProfiles[currentGame].Remove(currentProfile);
+
+            // Add same profile with new name
+            globalProfiles[currentGame].Add(newProfile, profileModsList);
+
+            currentProfile = newProfile;
             SetComboBoxActiveProfile();
             ParseModsList();
         }
@@ -341,7 +380,7 @@ namespace Universal_Mod_Organizer
             }
         }
 
-        private void MenuGame_Click(object sender, EventArgs e)
+        private void AnotherGameSelect(object sender, EventArgs e)
         {
             foreach (ToolStripMenuItem item in ((ToolStripMenuItem)sender).GetCurrentParent().Items)
             {
@@ -358,9 +397,13 @@ namespace Universal_Mod_Organizer
                 }
             }
 
+            AskToApplyChanges();
+
             currentProfile = "Default";
-            PopulateModsList();
             SetComboBoxActiveProfile();
+
+            PopulateModsList();
+            modListView.SetObjects(ModsList.GetLootLists());
             ParseModsList();
         }
 
@@ -519,9 +562,28 @@ namespace Universal_Mod_Organizer
 
         private void ProfileSelectedByUser(object sender, EventArgs e)
         {
+            AskToApplyChanges();
+
             // When new profile selected clean any
             currentProfile = comboBoxProfile.SelectedValue.ToString();
             ParseModsList();
+        }
+
+        private void AskToApplyChanges()
+        {
+            // TODO
+            /* If user deletes or add profiles what happends?
+             * */
+
+            if (unsavedChanges)
+            {
+                if (MessageBox.Show("You have unsaved changes.\nApply changes?", string.Empty, MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    SettingsSave();
+                }
+
+                unsavedChanges = false;
+            }
         }
     }
 }

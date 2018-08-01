@@ -37,7 +37,10 @@
             this.MenuGameStellaris = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuProfiles = new System.Windows.Forms.ToolStripMenuItem();
             this.ProfileAdd = new System.Windows.Forms.ToolStripMenuItem();
+            this.ProfileCopy = new System.Windows.Forms.ToolStripMenuItem();
             this.ProfileDelete = new System.Windows.Forms.ToolStripMenuItem();
+            this.ProfileRename = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.ProfileImport = new System.Windows.Forms.ToolStripMenuItem();
             this.ProfileExport = new System.Windows.Forms.ToolStripMenuItem();
             this.labelSearch = new System.Windows.Forms.Label();
@@ -93,34 +96,37 @@
             this.MenuGamesCrusaderKings2.Name = "MenuGamesCrusaderKings2";
             this.MenuGamesCrusaderKings2.Size = new System.Drawing.Size(183, 22);
             this.MenuGamesCrusaderKings2.Text = "Crusader Kings II";
-            this.MenuGamesCrusaderKings2.Click += new System.EventHandler(this.MenuGame_Click);
+            this.MenuGamesCrusaderKings2.Click += new System.EventHandler(this.AnotherGameSelect);
             // 
             // europaUniversalisIVToolStripMenuItem
             // 
             this.europaUniversalisIVToolStripMenuItem.Name = "europaUniversalisIVToolStripMenuItem";
             this.europaUniversalisIVToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
             this.europaUniversalisIVToolStripMenuItem.Text = "Europa Universalis IV";
-            this.europaUniversalisIVToolStripMenuItem.Click += new System.EventHandler(this.MenuGame_Click);
+            this.europaUniversalisIVToolStripMenuItem.Click += new System.EventHandler(this.AnotherGameSelect);
             // 
             // heartsOfIronIVToolStripMenuItem
             // 
             this.heartsOfIronIVToolStripMenuItem.Name = "heartsOfIronIVToolStripMenuItem";
             this.heartsOfIronIVToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
             this.heartsOfIronIVToolStripMenuItem.Text = "Hearts of Iron IV";
-            this.heartsOfIronIVToolStripMenuItem.Click += new System.EventHandler(this.MenuGame_Click);
+            this.heartsOfIronIVToolStripMenuItem.Click += new System.EventHandler(this.AnotherGameSelect);
             // 
             // MenuGameStellaris
             // 
             this.MenuGameStellaris.Name = "MenuGameStellaris";
             this.MenuGameStellaris.Size = new System.Drawing.Size(183, 22);
             this.MenuGameStellaris.Text = "Stellaris";
-            this.MenuGameStellaris.Click += new System.EventHandler(this.MenuGame_Click);
+            this.MenuGameStellaris.Click += new System.EventHandler(this.AnotherGameSelect);
             // 
             // MenuProfiles
             // 
             this.MenuProfiles.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ProfileAdd,
+            this.ProfileCopy,
             this.ProfileDelete,
+            this.ProfileRename,
+            this.toolStripSeparator2,
             this.ProfileImport,
             this.ProfileExport});
             this.MenuProfiles.Name = "MenuProfiles";
@@ -130,28 +136,47 @@
             // ProfileAdd
             // 
             this.ProfileAdd.Name = "ProfileAdd";
-            this.ProfileAdd.Size = new System.Drawing.Size(147, 22);
+            this.ProfileAdd.Size = new System.Drawing.Size(180, 22);
             this.ProfileAdd.Text = "Add Profile";
             this.ProfileAdd.Click += new System.EventHandler(this.ProfileAddSelect);
+            // 
+            // ProfileCopy
+            // 
+            this.ProfileCopy.Name = "ProfileCopy";
+            this.ProfileCopy.Size = new System.Drawing.Size(180, 22);
+            this.ProfileCopy.Text = "Copy Profile";
+            this.ProfileCopy.Click += new System.EventHandler(this.ProfileAddSelect);
             // 
             // ProfileDelete
             // 
             this.ProfileDelete.Name = "ProfileDelete";
-            this.ProfileDelete.Size = new System.Drawing.Size(147, 22);
+            this.ProfileDelete.Size = new System.Drawing.Size(180, 22);
             this.ProfileDelete.Text = "Delete Profile";
             this.ProfileDelete.Click += new System.EventHandler(this.ProfileDeleteSelect);
+            // 
+            // ProfileRename
+            // 
+            this.ProfileRename.Name = "ProfileRename";
+            this.ProfileRename.Size = new System.Drawing.Size(180, 22);
+            this.ProfileRename.Text = "Rename Profile";
+            this.ProfileRename.Click += new System.EventHandler(this.ProfileRenameSelect);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
             // 
             // ProfileImport
             // 
             this.ProfileImport.Name = "ProfileImport";
-            this.ProfileImport.Size = new System.Drawing.Size(147, 22);
+            this.ProfileImport.Size = new System.Drawing.Size(180, 22);
             this.ProfileImport.Text = "Import Profile";
             this.ProfileImport.Click += new System.EventHandler(this.ProfileImportSelect);
             // 
             // ProfileExport
             // 
             this.ProfileExport.Name = "ProfileExport";
-            this.ProfileExport.Size = new System.Drawing.Size(147, 22);
+            this.ProfileExport.Size = new System.Drawing.Size(180, 22);
             this.ProfileExport.Text = "Export Profile";
             this.ProfileExport.Click += new System.EventHandler(this.ProfileExportSelect);
             // 
@@ -429,6 +454,9 @@
         private System.Windows.Forms.TextBox textBoxGame;
         private System.Windows.Forms.ToolStripMenuItem europaUniversalisIVToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem heartsOfIronIVToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ProfileCopy;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem ProfileRename;
     }
 }
 

@@ -208,6 +208,7 @@ namespace Universal_Mod_Organizer
                     Helper.ModListForListView[idx].Enabled = selectedSubItem.Text;
                 }
 
+                unsavedChanges = true;
                 modListView.Refresh();
             }
         }
@@ -240,6 +241,8 @@ namespace Universal_Mod_Organizer
                     selectedSubItem.Text = Helper.SymbolYes;
                     Helper.ModListForListView[idx].Enabled = selectedSubItem.Text;
                 }
+
+                unsavedChanges = true;
             }
         }
 
@@ -249,16 +252,14 @@ namespace Universal_Mod_Organizer
             {
                 if (modListView.SelectedIndices.Count > 5)
                 {
-                    if (MessageBox.Show("There are more than " + modListView.SelectedIndices.Count + " entries to open, you are sure?", string.Empty, MessageBoxButtons.YesNo) == DialogResult.No)
+                    if (MessageBox.Show("There are more than " + modListView.SelectedIndices.Count + " entries to open, you are sure?", string.Empty, MessageBoxButtons.YesNo) == DialogResult.Yes)
                     {
-                        return;
+                        for (int i = 0; i <= modListView.SelectedIndices.Count - 1; i++)
+                        {
+                            var filePath = Path.GetDirectoryName(modListView.GetSubItem(modListView.SelectedIndices[i], columnFilename.DisplayIndex).Text);
+                            Process.Start(filePath);
+                        }
                     }
-                }
-
-                for (int i = 0; i <= modListView.SelectedIndices.Count - 1; i++)
-                {
-                    var filePath = Path.GetDirectoryName(modListView.GetSubItem(modListView.SelectedIndices[i], columnFilename.DisplayIndex).Text);
-                    Process.Start(filePath);
                 }
             }
         }
@@ -276,6 +277,8 @@ namespace Universal_Mod_Organizer
                     selectedSubItem.Text = string.Empty;
                     Helper.ModListForListView[idx].Enabled = string.Empty;
                 }
+
+                unsavedChanges = true;
             }
         }
 
@@ -299,15 +302,19 @@ namespace Universal_Mod_Organizer
                     We can`t just iterate that list from 0 to 9999.
                     */
                     var idx = Helper.ModListForListView.IndexOf(new ModsList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(startOrder, columnFilename.DisplayIndex).Text), 0, Helper.ModListForListView.Count);
-                    Helper.ModListForListView[idx].Order = startOrder.ToString("D3");
-                    modListView.GetSubItem(startOrder, columnOrder.DisplayIndex).Text = startOrder.ToString("D3");
-                    startOrder++;
+                    if (idx >= 0)
+                    {
+                        Helper.ModListForListView[idx].Order = startOrder.ToString("D3");
+                        modListView.GetSubItem(startOrder, columnOrder.DisplayIndex).Text = startOrder.ToString("D3");
+                        startOrder++;
+                    }
                 }
             }
         }
 
         private new void DragDrop(object sender, OlvDropEventArgs e)
         {
+            unsavedChanges = true;
             RenumberOrder();
         }
 
