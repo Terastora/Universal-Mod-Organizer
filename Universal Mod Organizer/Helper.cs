@@ -22,7 +22,5 @@ namespace Universal_Mod_Organizer
     public static class Helper
     {
         public const string SymbolYes = "✔";
-
-        public static List<ModsList> ModListForListView { get; set; } = new List<ModsList>();
     }
 }

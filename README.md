@@ -48,3 +48,9 @@ v0.4-alpha:
 
 v0.5-alpha:
 - Achievements Checker (TEST)
+
+v0.7-alpha:
+- ADDED: Profile Reset Option
+- FIXED: Adding default entries games/profile if one`s missing.
+- FIXED: Not updating active mods list if there are none selected before.
+- Minor Changes

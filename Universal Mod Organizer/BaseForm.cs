@@ -51,6 +51,9 @@ namespace Universal_Mod_Organizer
         private Regex regexGetOnlyLineName = new Regex("^#|=\".+$");
         private Regex regexGetOnlyLineData = new Regex("^(#|[a-z]+|_+)+=\"|\"$");
 
+        private List<ModList> modListForListView = new List<ModList>();
+
+        // List with files and pathes that lead to checksum change
         private List<string> checksumChangingFoldersAndFiles = new List<string>
         {
             "^common/.+$",
@@ -88,11 +91,64 @@ namespace Universal_Mod_Organizer
             columnName.Width = columnName.MinimumWidth + difference;
         }
 
+        private void SettingsDefault()
+        {
+            // Our game list we will remove one by one if we find it already in xml file
+            var gamesCheckList = new List<string>
+            {
+                "Crusader Kings II",
+                "Europa Universalis IV",
+                "Hearts of Iron IV",
+                "Stellaris"
+            };
+
+            // Iterate the games in dictionary and remove games from checklist above that we already have.
+            foreach (var gamesDict in globalProfiles)
+            {
+                // Check if we have that game in dictionary.
+                var idx = gamesCheckList.IndexOf(gamesDict.Key);
+
+                if (idx >= 0)
+                {
+                    // We do. So remove it from the checklist.
+                    gamesCheckList.RemoveAt(idx);
+
+                    // So check only default profile if available.
+                    if (!globalProfiles[gamesDict.Key].ContainsKey("Default"))
+                    {
+                        globalProfiles[gamesDict.Key].Add("Default", new List<string>());
+                    }
+                }
+            }
+
+            // Now add games that were left in check list
+            foreach (var gameInCheckList in gamesCheckList)
+            {
+                globalProfiles.Add(gameInCheckList, new SortedDictionary<string, List<string>>());
+                globalProfiles[gameInCheckList].Add("Default", new List<string>());
+            }
+        }
+
         private void SettingsLoad()
         {
+            // TODO 
+            /*
+             * missing xml doc
+             * missing entries
+             * misisng default profiles
+             * */
+
+            // If we didn`t find dataset.xml file then we need to create new one instead of loading settings.
+            if (!File.Exists(@"dataset.xml"))
+            {
+                SettingsDefault();
+                return;
+            }
+
+            // Now we load the document and check the default missing entries.
             doc = XDocument.Load(@"dataset.xml");
 
-            // Restore window size
+            // Restore window size or apply default values
             Width = Convert.ToInt32(Convert.ToString(doc.Root.Elements("Settings").Elements("FormWidth").Select(x => x.Value).SingleOrDefault()) ?? Width.ToString());
             Height = Convert.ToInt32(Convert.ToString(doc.Root.Elements("Settings").Elements("FormHeight").Select(x => x.Value).SingleOrDefault()) ?? Height.ToString());
 
@@ -120,6 +176,9 @@ namespace Universal_Mod_Organizer
                     }
                 }
             }
+
+            // Get missing entries from default settings.
+            SettingsDefault();
 
             // Updating UI for current or last remembered game.
 
@@ -162,17 +221,17 @@ namespace Universal_Mod_Organizer
             // Update current selected profile with new changes from list view.
 
             // We sort it by order as it is important so save correctly.
-            Helper.ModListForListView.Sort((x, y) => x.Order.CompareTo(y.Order));
+            modListForListView.Sort((x, y) => x.Order.CompareTo(y.Order));
 
             // Temporary enableModsList that we populate with data
             var enabledModsList = new List<string>();
 
             // Put only active mods there.
-            for (int i = 0; i < Helper.ModListForListView.Count; i++)
+            for (int i = 0; i < modListForListView.Count; i++)
             {
-                if (Helper.ModListForListView[i].Enabled == Helper.SymbolYes)
+                if (modListForListView[i].Enabled == Helper.SymbolYes)
                 {
-                    enabledModsList.Add(Helper.ModListForListView[i].Filename);
+                    enabledModsList.Add(modListForListView[i].Filename);
                 }
             }
 
@@ -391,6 +450,28 @@ namespace Universal_Mod_Organizer
             }
         }
 
+        private void ProfileResetSelect(object sender, EventArgs e)
+        {
+            // This resets profile to clean state. Disable all, sort by name, reorder.            
+
+            // Disable All
+            for (int i = 0; i < modListView.Items.Count; i++)
+            {
+                var selectedIndex = modListView.Items[i].Index;
+                var selectedSubItem = modListView.GetSubItem(selectedIndex, columnEnabled.DisplayIndex);
+                var idx = modListForListView.IndexOf(new ModList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(selectedIndex, columnFilename.DisplayIndex).Text), 0, modListForListView.Count);
+
+                selectedSubItem.Text = string.Empty;
+                modListForListView[idx].Enabled = string.Empty;
+            }
+
+            modListView.Sort(columnName, SortOrder.Ascending);
+            RenumberOrder();
+            modListView.Sort(columnOrder, SortOrder.Ascending);
+
+            unsavedChanges = true;
+        }
+
         private void AnotherGameSelect(object sender, EventArgs e)
         {
             foreach (ToolStripMenuItem item in ((ToolStripMenuItem)sender).GetCurrentParent().Items)
@@ -414,7 +495,7 @@ namespace Universal_Mod_Organizer
             SetComboBoxActiveProfile();
 
             PopulateModsList();
-            modListView.SetObjects(ModsList.GetLootLists());
+            modListView.SetObjects(modListForListView);
             ParseModsList();
         }
 
@@ -445,7 +526,7 @@ namespace Universal_Mod_Organizer
             SettingsSave();
         }
 
-        private void WriteDataToModFile(ModsList item, string gameFolder)
+        private void WriteDataToModFile(ModList item, string gameFolder)
         {
             var fileName = gameFolder + item.Filename;
 
@@ -457,12 +538,12 @@ namespace Universal_Mod_Organizer
             using (StreamWriter sw = File.AppendText(fileName))
             {
                 var regexMatchLineName = new Regex("^name=.*$");
-                var regexMatchLineNameOriginal = new Regex("^#original_name=.*$");
+                var regexMatchLineNameIrrelevantData = new Regex("^#(original_name|achievement_compatible)=.*$");
 
                 foreach (string line in allFileLines)
                 {
                     Match matchName = regexMatchLineName.Match(line);
-                    Match matchOriginalName = regexMatchLineNameOriginal.Match(line);
+                    Match matchOriginalName = regexMatchLineNameIrrelevantData.Match(line);
 
                     if (matchName.Success)
                     {
@@ -498,77 +579,75 @@ namespace Universal_Mod_Organizer
             var settingsFile = gameFolder + @"settings.txt";
             var settingsFileBackup = gameFolder + @"settings.bak";
 
-            Regex regexDeleteModLine = new Regex("^\t\"mod.+\"$");
+            // http://regexstorm.net/tester
+            Regex lastModsEntry = new Regex("last_mods={((\r|\n)+(\t.*(\r|\n)+)+}|.+})(\r|\n)+");
 
             // Edit game file. settings.txt.
 
             // Making backup
             System.IO.File.Copy(settingsFile, settingsFileBackup, true);
 
-            // Read file line by line.
-            string[] allFileLines = File.ReadAllLines(settingsFile);
+            // Read all file lines into one big string.
+            string alltext = File.ReadAllText(settingsFile, Encoding.ASCII);
+
+            // Remove all last_mod entries by regex match.
+            alltext = lastModsEntry.Replace(alltext, string.Empty);
 
             // Deleting the file.
             File.Delete(settingsFile);
 
+            // Creating settings file without last_mods
+            File.WriteAllText(settingsFile, alltext);
+
+            // If you don`t have any mods enabled, then we are done here.
+            if (enabledModsList.Count == 0)
+            {
+                return;
+            }
+
+            // Add our modified part with last_mods
             using (StreamWriter sw = File.AppendText(settingsFile))
             {
-                foreach (string line in allFileLines)
+                // Different logic for CK2, will be case switch if there are more.
+                if (currentGame.Equals("Crusader Kings II"))
                 {
-                    // If we found that line, go to cycle and add our mods there
-                    if (line.Contains("last_mods="))
+                    StringBuilder oneBigLine = new StringBuilder();
+
+                    oneBigLine.Append("last_mods={");
+
+                    // Cycle through list and write enabled mods to settings file
+                    foreach (var item in enabledModsList)
                     {
-                        // Different logic for CK2, will be case switch if there are more.
-                        if (currentGame.Equals("Crusader Kings II"))
-                        {
-                            StringBuilder oneBigLine = new StringBuilder();
-
-                            oneBigLine.Append("last_mods={");
-
-                            // Cycle through list and write enabled mods to settings file
-                            foreach (var item in enabledModsList)
-                            {
-                                oneBigLine.Append("\"" + item.Replace("\\", "/") + "\" ");
-                            }
-
-                            // Remove last space :) OCD...
-                            oneBigLine.Remove(oneBigLine.Length - 1, 1);
-
-                            // Enclosing bracket
-                            oneBigLine.Append("}");
-
-                            sw.WriteLine(oneBigLine);
-                        }
-                        else
-                        {
-                            // Write that line
-                            sw.WriteLine("last_mods={");
-
-                            // Cycle through list and write enabled mods to settings file
-                            foreach (var item in enabledModsList)
-                            {
-                                sw.WriteLine("\t\"" + item.Replace("\\", "/") + "\"");
-                            }
-                        }
-
-                        // Also edit the .mod file as we are changing the mod name
-                        foreach (var item in Helper.ModListForListView)
-                        {
-                            WriteDataToModFile(item, gameFolder);
-                        }
-
-                        // Skip last_mods line.
-                        continue;
+                        oneBigLine.Append("\"" + item.Replace("\\", "/") + "\" ");
                     }
 
-                    // If there are old lines with mod entries. Just ignore then and do not write them to file. Works with CK2.
-                    Match match = regexDeleteModLine.Match(line);
+                    // Remove last space :) OCD...
+                    oneBigLine.Remove(oneBigLine.Length - 1, 1);
 
-                    if (!match.Success)
-                    {
-                        sw.WriteLine(line);
-                    }
+                    // Enclosing bracket
+                    oneBigLine.Append("}");
+
+                    sw.WriteLine(oneBigLine);
                 }
+                else
+                {
+                    // Write that line
+                    sw.WriteLine("last_mods={");
+
+                    // Cycle through list and write enabled mods to settings file
+                    foreach (var item in enabledModsList)
+                    {
+                        sw.WriteLine("\t\"" + item.Replace("\\", "/") + "\"");
+                    }
+
+                    sw.WriteLine("}");
+                }
+            }
+
+            // Also edit the .mod file as we are changing the mod name
+            foreach (var item in modListForListView)
+            {
+                WriteDataToModFile(item, gameFolder);
             }
         }
 
@@ -602,16 +681,22 @@ namespace Universal_Mod_Organizer
         {
             BackgroundWorkderAchievementChecker.RunWorkerAsync();
         }
-        
+
         private void BackgroundWorkderAchievementCheckerDoWork(object sender, DoWorkEventArgs e)
         {
-            for (int i = 0; i < Helper.ModListForListView.Count; i++)
+            for (int i = 0; i < modListForListView.Count; i++)
             {
-                BackgroundWorkderAchievementChecker.ReportProgress((int)Math.Round(((double)i / 100) * Helper.ModListForListView.Count, 0));
-                string zipPath = Helper.ModListForListView[i].Archive;
+                BackgroundWorkderAchievementChecker.ReportProgress((int)Math.Round(((double)i / 100) * modListForListView.Count, 0));
+                string zipPath = modListForListView[i].Archive;
 
                 // Assume that all mods are compatible by default
-                Helper.ModListForListView[i].Achivements = "yes";
+                modListForListView[i].Achivements = "yes";
+
+                // In case it is very short or empty.
+                if (zipPath.Length < 5)
+                {
+                    continue;
+                }
 
                 using (ZipArchive archive = ZipFile.OpenRead(zipPath))
                 {
@@ -622,7 +707,7 @@ namespace Universal_Mod_Organizer
 
                         if (match.Success)
                         {
-                            Helper.ModListForListView[i].Achivements = "no";
+                            modListForListView[i].Achivements = "no";
                         }
                     }
                 }

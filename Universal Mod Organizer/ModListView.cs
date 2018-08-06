@@ -92,8 +92,8 @@ namespace Universal_Mod_Organizer
             // Load Mods to List View
             PopulateModsList();
 
-            // Get Lootables list.
-            modListView.SetObjects(ModsList.GetLootLists());
+            // Get mod list
+            modListView.SetObjects(modListForListView);
             ParseModsList();
         }
 
@@ -103,7 +103,7 @@ namespace Universal_Mod_Organizer
             globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
 
             // Revert to "clean state"
-            Helper.ModListForListView.ForEach(u =>
+            modListForListView.ForEach(u =>
             {
                 // Get index and availability of the mod in the our list i.e. it is enabled and its position in order
                 var idx = profileModsList.IndexOf(u.Filename);
@@ -130,7 +130,7 @@ namespace Universal_Mod_Organizer
 
         private void PopulateModsList()
         {
-            Helper.ModListForListView.Clear();
+            modListForListView.Clear();
 
             var myMods = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Paradox Interactive\" + currentGame + @"\mod\";
 
@@ -142,7 +142,7 @@ namespace Universal_Mod_Organizer
                     if (fileExtension == ".mod")
                     {
                         // Create modList to add to ListView later on.
-                        var modListForView = new ModsList();
+                        var modListForView = new ModList();
 
                         foreach (var line in File.ReadLines(filePath))
                         {
@@ -183,12 +183,12 @@ namespace Universal_Mod_Organizer
                         modListForView.Filename = new DirectoryInfo(Path.GetDirectoryName(filePath)).Name + @"\" + Path.GetFileName(filePath);
 
                         // Add to ListView.
-                        Helper.ModListForListView.Add(modListForView);
+                        modListForListView.Add(modListForView);
                     }
                 }
 
                 // After all files are processed.
-                Helper.ModListForListView.Sort((x, y) => string.Compare(x.Name, y.Name));
+                modListForListView.Sort((x, y) => string.Compare(x.Name, y.Name));
             }
             catch (Exception ex)
             {
@@ -206,22 +206,22 @@ namespace Universal_Mod_Organizer
 
         private void ModListDoubleClick(object sender, MouseEventArgs e)
         {
-            if (modListView.SelectedItems.Count > 0 && Helper.ModListForListView.Count > 0)
+            if (modListView.SelectedItems.Count > 0 && modListForListView.Count > 0)
             {
                 var selectedIndex = modListView.SelectedIndex;
                 var selectedSubItem = modListView.GetSubItem(selectedIndex, columnEnabled.DisplayIndex);
 
-                var idx = Helper.ModListForListView.IndexOf(new ModsList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(selectedIndex, columnFilename.DisplayIndex).Text), 0, Helper.ModListForListView.Count);
+                var idx = modListForListView.IndexOf(new ModList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(selectedIndex, columnFilename.DisplayIndex).Text), 0, modListForListView.Count);
 
                 if (selectedSubItem.Text == string.Empty)
                 {
                     selectedSubItem.Text = Helper.SymbolYes;
-                    Helper.ModListForListView[idx].Enabled = selectedSubItem.Text;
+                    modListForListView[idx].Enabled = selectedSubItem.Text;
                 }
                 else
                 {
                     selectedSubItem.Text = string.Empty;
-                    Helper.ModListForListView[idx].Enabled = selectedSubItem.Text;
+                    modListForListView[idx].Enabled = selectedSubItem.Text;
                 }
 
                 unsavedChanges = true;
@@ -252,10 +252,10 @@ namespace Universal_Mod_Organizer
                 {
                     var selectedIndex = modListView.SelectedIndices[i];
                     var selectedSubItem = modListView.GetSubItem(selectedIndex, columnEnabled.DisplayIndex);
-                    var idx = Helper.ModListForListView.IndexOf(new ModsList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(selectedIndex, columnFilename.DisplayIndex).Text), 0, Helper.ModListForListView.Count);
+                    var idx = modListForListView.IndexOf(new ModList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(selectedIndex, columnFilename.DisplayIndex).Text), 0, modListForListView.Count);
 
                     selectedSubItem.Text = Helper.SymbolYes;
-                    Helper.ModListForListView[idx].Enabled = selectedSubItem.Text;
+                    modListForListView[idx].Enabled = selectedSubItem.Text;
                 }
 
                 unsavedChanges = true;
@@ -288,10 +288,10 @@ namespace Universal_Mod_Organizer
                 {
                     var selectedIndex = modListView.SelectedIndices[i];
                     var selectedSubItem = modListView.GetSubItem(selectedIndex, columnEnabled.DisplayIndex);
-                    var idx = Helper.ModListForListView.IndexOf(new ModsList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(selectedIndex, columnFilename.DisplayIndex).Text), 0, Helper.ModListForListView.Count);
+                    var idx = modListForListView.IndexOf(new ModList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(selectedIndex, columnFilename.DisplayIndex).Text), 0, modListForListView.Count);
 
                     selectedSubItem.Text = string.Empty;
-                    Helper.ModListForListView[idx].Enabled = string.Empty;
+                    modListForListView[idx].Enabled = string.Empty;
                 }
 
                 unsavedChanges = true;
@@ -309,7 +309,7 @@ namespace Universal_Mod_Organizer
 
         private void RenumberOrder()
         {
-            if (modListView.Items.Count > 0 && Helper.ModListForListView.Count > 0)
+            if (modListView.Items.Count > 0 && modListForListView.Count > 0)
             {
                 var startOrder = 0;
                 for (int i = 0; i < modListView.Items.Count; i++)
@@ -317,10 +317,10 @@ namespace Universal_Mod_Organizer
                     /* We check IndexOf because sorting by order != named order so we find the entry in ModListForListView and change order there.
                     We can`t just iterate that list from 0 to 9999.
                     */
-                    var idx = Helper.ModListForListView.IndexOf(new ModsList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(startOrder, columnFilename.DisplayIndex).Text), 0, Helper.ModListForListView.Count);
+                    var idx = modListForListView.IndexOf(new ModList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(startOrder, columnFilename.DisplayIndex).Text), 0, modListForListView.Count);
                     if (idx >= 0)
                     {
-                        Helper.ModListForListView[idx].Order = startOrder.ToString("D3");
+                        modListForListView[idx].Order = startOrder.ToString("D3");
                         modListView.GetSubItem(startOrder, columnOrder.DisplayIndex).Text = startOrder.ToString("D3");
                         startOrder++;
                     }

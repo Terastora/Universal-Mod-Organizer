@@ -19,9 +19,9 @@ using System.Threading.Tasks;
 
 namespace Universal_Mod_Organizer
 {
-    public sealed class ModsList : IEquatable<ModsList>
+    public sealed class ModList : IEquatable<ModList>
     {
-        public ModsList(
+        public ModList(
             string enabled = "",
             string order = "",
             string name = "N/A",
@@ -69,7 +69,7 @@ namespace Universal_Mod_Organizer
 
         public string Achivements { get; set; }
 
-        public bool Equals(ModsList other)
+        public bool Equals(ModList other)
         {
             if (Filename == other.Filename)
             {
@@ -77,11 +77,6 @@ namespace Universal_Mod_Organizer
             }
 
             return false;
-        }
-
-        internal static List<ModsList> GetLootLists()
-        {
-            return Helper.ModListForListView;
         }
     }
 }

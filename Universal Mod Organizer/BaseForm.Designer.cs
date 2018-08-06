@@ -69,6 +69,8 @@
             this.textBoxGame = new System.Windows.Forms.TextBox();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.BackgroundWorkderAchievementChecker = new System.ComponentModel.BackgroundWorker();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.ResetProfile = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripBaseForm.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.modListView)).BeginInit();
             this.contextMenuStripModListView.SuspendLayout();
@@ -134,7 +136,9 @@
             this.ProfileRename,
             this.toolStripSeparator2,
             this.ProfileImport,
-            this.ProfileExport});
+            this.ProfileExport,
+            this.toolStripSeparator3,
+            this.ResetProfile});
             this.MenuProfiles.Name = "MenuProfiles";
             this.MenuProfiles.Size = new System.Drawing.Size(58, 20);
             this.MenuProfiles.Text = "Profiles";
@@ -142,47 +146,47 @@
             // ProfileAdd
             // 
             this.ProfileAdd.Name = "ProfileAdd";
-            this.ProfileAdd.Size = new System.Drawing.Size(154, 22);
+            this.ProfileAdd.Size = new System.Drawing.Size(180, 22);
             this.ProfileAdd.Text = "Add Profile";
             this.ProfileAdd.Click += new System.EventHandler(this.ProfileAddSelect);
             // 
             // ProfileCopy
             // 
             this.ProfileCopy.Name = "ProfileCopy";
-            this.ProfileCopy.Size = new System.Drawing.Size(154, 22);
+            this.ProfileCopy.Size = new System.Drawing.Size(180, 22);
             this.ProfileCopy.Text = "Copy Profile";
             this.ProfileCopy.Click += new System.EventHandler(this.ProfileAddSelect);
             // 
             // ProfileDelete
             // 
             this.ProfileDelete.Name = "ProfileDelete";
-            this.ProfileDelete.Size = new System.Drawing.Size(154, 22);
+            this.ProfileDelete.Size = new System.Drawing.Size(180, 22);
             this.ProfileDelete.Text = "Delete Profile";
             this.ProfileDelete.Click += new System.EventHandler(this.ProfileDeleteSelect);
             // 
             // ProfileRename
             // 
             this.ProfileRename.Name = "ProfileRename";
-            this.ProfileRename.Size = new System.Drawing.Size(154, 22);
+            this.ProfileRename.Size = new System.Drawing.Size(180, 22);
             this.ProfileRename.Text = "Rename Profile";
             this.ProfileRename.Click += new System.EventHandler(this.ProfileRenameSelect);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(151, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
             // 
             // ProfileImport
             // 
             this.ProfileImport.Name = "ProfileImport";
-            this.ProfileImport.Size = new System.Drawing.Size(154, 22);
+            this.ProfileImport.Size = new System.Drawing.Size(180, 22);
             this.ProfileImport.Text = "Import Profile";
             this.ProfileImport.Click += new System.EventHandler(this.ProfileImportSelect);
             // 
             // ProfileExport
             // 
             this.ProfileExport.Name = "ProfileExport";
-            this.ProfileExport.Size = new System.Drawing.Size(154, 22);
+            this.ProfileExport.Size = new System.Drawing.Size(180, 22);
             this.ProfileExport.Text = "Export Profile";
             this.ProfileExport.Click += new System.EventHandler(this.ProfileExportSelect);
             // 
@@ -302,10 +306,10 @@
             // columnUID
             // 
             this.columnUID.AspectName = "UID";
-            this.columnUID.MaximumWidth = 120;
-            this.columnUID.MinimumWidth = 120;
+            this.columnUID.MaximumWidth = 90;
+            this.columnUID.MinimumWidth = 90;
             this.columnUID.Text = "UID";
-            this.columnUID.Width = 120;
+            this.columnUID.Width = 90;
             // 
             // columnConflicts
             // 
@@ -442,6 +446,18 @@
             this.BackgroundWorkderAchievementChecker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorkderAchievementCheckerProgressChanged);
             this.BackgroundWorkderAchievementChecker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkderAchievementWorkerCompleted);
             // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
+            // 
+            // ResetProfile
+            // 
+            this.ResetProfile.Name = "ResetProfile";
+            this.ResetProfile.Size = new System.Drawing.Size(180, 22);
+            this.ResetProfile.Text = "Reset Profile";
+            this.ResetProfile.Click += new System.EventHandler(this.ProfileResetSelect);
+            // 
             // BaseForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -514,6 +530,8 @@
         private System.Windows.Forms.ToolStripMenuItem checkAchievementsCompatibilityToolStripMenuItem;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.ComponentModel.BackgroundWorker BackgroundWorkderAchievementChecker;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem ResetProfile;
     }
 }
 
