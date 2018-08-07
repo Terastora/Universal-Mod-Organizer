@@ -29,6 +29,7 @@ namespace Universal_Mod_Organizer
         {
             // Embed DLL in EXE.
             EmbeddedAssembly.Load("Universal_Mod_Organizer.dll.ObjectListView.dll", "ObjectListView.dll");
+            EmbeddedAssembly.Load("Universal_Mod_Organizer.dll.ByteSize.dll", "ByteSize.dll");
 
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 

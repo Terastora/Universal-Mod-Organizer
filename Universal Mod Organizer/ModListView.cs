@@ -12,6 +12,7 @@
 #endregion
 
 using BrightIdeasSoftware;
+using ByteSizeLib;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -89,111 +90,75 @@ namespace Universal_Mod_Organizer
                 }
             }
 
-            // Load Mods to List View
-            PopulateModsList();
+            // Set objects source.
+            modListView.SetObjects(modList);
+            
+            // Load mods
+            LoadMods();
 
-            // Get mod list
-            modListView.SetObjects(modListForListView);
-            ParseModsList();
+            ApplyProfileData();
+
+            // Build final listview.
+            modListView.BuildList();
         }
 
-        private void ParseModsList()
+        private void LoadMods()
         {
-            // This parses mod list according to selected profile etc.
-            globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
+            modList.Clear();
 
-            // Revert to "clean state"
-            modListForListView.ForEach(u =>
+            foreach (string modFile in Directory.GetFiles(GetGameSettingsFolder() + @"mod\"))
             {
-                // Get index and availability of the mod in the our list i.e. it is enabled and its position in order
-                var idx = profileModsList.IndexOf(u.Filename);
-
-                // Clean ordering if any.
-                if (idx < 0)
+                var fileExtension = Path.GetExtension(modFile);
+                if (fileExtension == ".mod")
                 {
-                    // We don`t. So clean enabled state and order.
-                    u.Enabled = string.Empty;
-                    u.Order = "99999"; // think about workaround
+                    modList.Add(new Mod(modFile));
                 }
+            }
 
-                if (idx >= 0)
-                {
-                    // We do.
-                    u.Enabled = Helper.SymbolYes;
-                    u.Order = idx.ToString("D3");
-                }
+            modList.ForEach(u =>
+            {
+                u.GetModInfo();
             });
+
+            // After all files are processed sort them by name.
+            modList.Sort((x, y) => string.Compare(x.Name, y.Name));
+        }
+
+        private void ApplyProfileData()
+        {
+           // This parses mod list according to selected profile etc.
+           globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
+
+           // Revert to "clean state" so we can apply profile to existing mod list.
+           modList.ForEach(u =>
+           {
+               // Get index and availability of the mod in the our list i.e. it is enabled and its position in order
+               var idx = profileModsList.IndexOf(u.Filename);
+
+               // Clean ordering if any.
+               if (idx < 0)
+               {
+                   // We don`t. So clean enabled state and order.
+                   u.Enabled = string.Empty;
+                   u.Order = "9999"; // think about workaround
+               }
+           
+               if (idx >= 0)
+               {
+                   // We do.
+                   u.Enabled = Helper.SymbolYes;
+                   u.Order = idx.ToString("D3");
+               }
+           });
+
             modListView.BuildList();
             modListView.Sort(columnOrder, SortOrder.Ascending);
             RenumberOrder();
         }
 
-        private void PopulateModsList()
+        private string GetGameSettingsFolder()
         {
-            modListForListView.Clear();
-
-            var myMods = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Paradox Interactive\" + currentGame + @"\mod\";
-
-            try
-            {
-                foreach (string filePath in Directory.GetFiles(myMods))
-                {
-                    var fileExtension = Path.GetExtension(filePath);
-                    if (fileExtension == ".mod")
-                    {
-                        // Create modList to add to ListView later on.
-                        var modListForView = new ModList();
-
-                        foreach (var line in File.ReadLines(filePath))
-                        {
-                            var stringSwitch = regexGetOnlyLineName.Replace(line, string.Empty);
-
-                            switch (stringSwitch)
-                            {
-                                case "original_name":
-                                    modListForView.Name = regexGetOnlyLineData.Replace(line, string.Empty);
-                                    break;
-
-                                case "name":
-                                    modListForView.Name = regexGetOnlyLineData.Replace(line, string.Empty);
-                                    break;
-
-                                case "supported_version":
-                                    modListForView.Version = regexGetOnlyLineData.Replace(line, string.Empty);
-                                    break;
-
-                                case "remote_file_id":
-                                    modListForView.UID = regexGetOnlyLineData.Replace(line, string.Empty);
-                                    modListForView.Workshop = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + modListForView.UID;
-                                    break;
-
-                                case "achievement_compatible":
-                                    modListForView.Achivements = regexGetOnlyLineData.Replace(line, string.Empty);
-                                    break;
-
-                                case "archive": // TODO Regex (\\{2}|\/)
-                                    modListForView.Archive = regexGetOnlyLineData.Replace(line, string.Empty).Replace(@"\\", @"\").Replace(@"/", @"\");
-                                    break;
-
-                                default:
-                                    break;
-                            }
-                        }
-
-                        modListForView.Filename = new DirectoryInfo(Path.GetDirectoryName(filePath)).Name + @"\" + Path.GetFileName(filePath);
-
-                        // Add to ListView.
-                        modListForListView.Add(modListForView);
-                    }
-                }
-
-                // After all files are processed.
-                modListForListView.Sort((x, y) => string.Compare(x.Name, y.Name));
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString()); // Can`t find mod folder, is the game installed?
-            }
+            return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Paradox Interactive\" + currentGame + @"\";
         }
 
         private void ModListClick(object sender, MouseEventArgs e)
@@ -206,24 +171,24 @@ namespace Universal_Mod_Organizer
 
         private void ModListDoubleClick(object sender, MouseEventArgs e)
         {
-            if (modListView.SelectedItems.Count > 0 && modListForListView.Count > 0)
+            if (modListView.SelectedItems.Count > 0 && modList.Count > 0)
             {
                 var selectedIndex = modListView.SelectedIndex;
                 var selectedSubItem = modListView.GetSubItem(selectedIndex, columnEnabled.DisplayIndex);
 
-                var idx = modListForListView.IndexOf(new ModList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(selectedIndex, columnFilename.DisplayIndex).Text), 0, modListForListView.Count);
+                var idx = modList.FindIndex(x => x.UID.Contains(modListView.GetSubItem(selectedIndex, columnUID.DisplayIndex).Text));
 
                 if (selectedSubItem.Text == string.Empty)
                 {
                     selectedSubItem.Text = Helper.SymbolYes;
-                    modListForListView[idx].Enabled = selectedSubItem.Text;
+                    modList[idx].Enabled = selectedSubItem.Text;
                 }
                 else
                 {
                     selectedSubItem.Text = string.Empty;
-                    modListForListView[idx].Enabled = selectedSubItem.Text;
+                    modList[idx].Enabled = selectedSubItem.Text;
                 }
-
+                
                 unsavedChanges = true;
                 modListView.Refresh();
             }
@@ -252,31 +217,13 @@ namespace Universal_Mod_Organizer
                 {
                     var selectedIndex = modListView.SelectedIndices[i];
                     var selectedSubItem = modListView.GetSubItem(selectedIndex, columnEnabled.DisplayIndex);
-                    var idx = modListForListView.IndexOf(new ModList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(selectedIndex, columnFilename.DisplayIndex).Text), 0, modListForListView.Count);
+                    var idx = modList.FindIndex(x => x.UID.Contains(modListView.GetSubItem(selectedIndex, columnUID.DisplayIndex).Text));
 
                     selectedSubItem.Text = Helper.SymbolYes;
-                    modListForListView[idx].Enabled = selectedSubItem.Text;
+                    modList[idx].Enabled = selectedSubItem.Text;
                 }
 
                 unsavedChanges = true;
-            }
-        }
-
-        private void OpenModFolder(object sender, EventArgs e)
-        {
-            if (modListView.SelectedIndices.Count > 0)
-            {
-                if (modListView.SelectedIndices.Count > 5)
-                {
-                    if (MessageBox.Show("There are more than " + modListView.SelectedIndices.Count + " entries to open, you are sure?", string.Empty, MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    {
-                        for (int i = 0; i <= modListView.SelectedIndices.Count - 1; i++)
-                        {
-                            var filePath = Path.GetDirectoryName(modListView.GetSubItem(modListView.SelectedIndices[i], columnFilename.DisplayIndex).Text);
-                            Process.Start(filePath);
-                        }
-                    }
-                }
             }
         }
 
@@ -288,10 +235,10 @@ namespace Universal_Mod_Organizer
                 {
                     var selectedIndex = modListView.SelectedIndices[i];
                     var selectedSubItem = modListView.GetSubItem(selectedIndex, columnEnabled.DisplayIndex);
-                    var idx = modListForListView.IndexOf(new ModList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(selectedIndex, columnFilename.DisplayIndex).Text), 0, modListForListView.Count);
+                    var idx = modList.FindIndex(x => x.UID.Contains(modListView.GetSubItem(selectedIndex, columnUID.DisplayIndex).Text));
 
                     selectedSubItem.Text = string.Empty;
-                    modListForListView[idx].Enabled = string.Empty;
+                    modList[idx].Enabled = string.Empty;
                 }
 
                 unsavedChanges = true;
@@ -309,7 +256,7 @@ namespace Universal_Mod_Organizer
 
         private void RenumberOrder()
         {
-            if (modListView.Items.Count > 0 && modListForListView.Count > 0)
+            if (modListView.Items.Count > 0 && modList.Count > 0)
             {
                 var startOrder = 0;
                 for (int i = 0; i < modListView.Items.Count; i++)
@@ -317,10 +264,11 @@ namespace Universal_Mod_Organizer
                     /* We check IndexOf because sorting by order != named order so we find the entry in ModListForListView and change order there.
                     We can`t just iterate that list from 0 to 9999.
                     */
-                    var idx = modListForListView.IndexOf(new ModList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(startOrder, columnFilename.DisplayIndex).Text), 0, modListForListView.Count);
+                    var idx = modList.FindIndex(x => x.UID.Contains(modListView.GetSubItem(startOrder, columnUID.DisplayIndex).Text));
+
                     if (idx >= 0)
                     {
-                        modListForListView[idx].Order = startOrder.ToString("D3");
+                        modList[idx].Order = startOrder.ToString("D3");
                         modListView.GetSubItem(startOrder, columnOrder.DisplayIndex).Text = startOrder.ToString("D3");
                         startOrder++;
                     }
@@ -362,6 +310,11 @@ namespace Universal_Mod_Organizer
                     e.SubItem.Text = string.Empty;
                 }
             }
+
+            if (e.ColumnIndex == columnSize.DisplayIndex)
+            {
+                e.SubItem.Text = ByteSize.FromBytes(Convert.ToDouble(e.CellValue)).ToString();
+            }
         }
 
         private void CellToolTipShowing(object sender, ToolTipShowingEventArgs e)
@@ -369,10 +322,13 @@ namespace Universal_Mod_Organizer
             // Show a long tooltip over cells only when the control key is down
             if (e.ColumnIndex == columnName.DisplayIndex)
             {
-                var tooltipText = modListView.GetSubItem(e.RowIndex, columnFilename.DisplayIndex).Text;
+                var idx = modList.Find(x => x.UID.Contains(modListView.GetSubItem(e.RowIndex, columnUID.DisplayIndex).Text));
+
+                var tooltipText = idx.FilePath;
+
                 if (tooltipText != string.Empty)
                 {
-                    e.Text = string.Format("Filepath:'\r\n'{0}'", tooltipText);
+                    e.Text = string.Format("Filepath:\n'{0}'\n-\nFiles\n'{1}'", tooltipText, idx.GetFilesCount());
                 }
             }
 

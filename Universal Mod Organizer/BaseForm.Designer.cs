@@ -43,8 +43,13 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.ProfileImport = new System.Windows.Forms.ToolStripMenuItem();
             this.ProfileExport = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.ResetProfile = new System.Windows.Forms.ToolStripMenuItem();
             this.actionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkAchievementsCompatibilityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.checkConflictsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.openGameSettingsFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.labelSearch = new System.Windows.Forms.Label();
             this.textBoxSearch = new System.Windows.Forms.TextBox();
             this.modListView = new BrightIdeasSoftware.ObjectListView();
@@ -55,22 +60,22 @@
             this.columnUID = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.columnConflicts = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.columnWorkshop = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-            this.columnFilename = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.columnAchivements = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.columnSize = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.columnFiles = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.buttonApply = new System.Windows.Forms.Button();
             this.contextMenuStripModListView = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.enableSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disableSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.openFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openArchiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.labelProfile = new System.Windows.Forms.Label();
             this.comboBoxProfile = new System.Windows.Forms.ComboBox();
             this.labelGame = new System.Windows.Forms.Label();
             this.textBoxGame = new System.Windows.Forms.TextBox();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.BackgroundWorkderAchievementChecker = new System.ComponentModel.BackgroundWorker();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.ResetProfile = new System.Windows.Forms.ToolStripMenuItem();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.BackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.menuStripBaseForm.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.modListView)).BeginInit();
             this.contextMenuStripModListView.SuspendLayout();
@@ -84,7 +89,7 @@
             this.actionsToolStripMenuItem});
             this.menuStripBaseForm.Location = new System.Drawing.Point(0, 0);
             this.menuStripBaseForm.Name = "menuStripBaseForm";
-            this.menuStripBaseForm.Size = new System.Drawing.Size(954, 24);
+            this.menuStripBaseForm.Size = new System.Drawing.Size(1014, 24);
             this.menuStripBaseForm.TabIndex = 0;
             this.menuStripBaseForm.Text = "menuStripBaseForm";
             // 
@@ -146,54 +151,69 @@
             // ProfileAdd
             // 
             this.ProfileAdd.Name = "ProfileAdd";
-            this.ProfileAdd.Size = new System.Drawing.Size(180, 22);
+            this.ProfileAdd.Size = new System.Drawing.Size(154, 22);
             this.ProfileAdd.Text = "Add Profile";
             this.ProfileAdd.Click += new System.EventHandler(this.ProfileAddSelect);
             // 
             // ProfileCopy
             // 
             this.ProfileCopy.Name = "ProfileCopy";
-            this.ProfileCopy.Size = new System.Drawing.Size(180, 22);
+            this.ProfileCopy.Size = new System.Drawing.Size(154, 22);
             this.ProfileCopy.Text = "Copy Profile";
             this.ProfileCopy.Click += new System.EventHandler(this.ProfileAddSelect);
             // 
             // ProfileDelete
             // 
             this.ProfileDelete.Name = "ProfileDelete";
-            this.ProfileDelete.Size = new System.Drawing.Size(180, 22);
+            this.ProfileDelete.Size = new System.Drawing.Size(154, 22);
             this.ProfileDelete.Text = "Delete Profile";
             this.ProfileDelete.Click += new System.EventHandler(this.ProfileDeleteSelect);
             // 
             // ProfileRename
             // 
             this.ProfileRename.Name = "ProfileRename";
-            this.ProfileRename.Size = new System.Drawing.Size(180, 22);
+            this.ProfileRename.Size = new System.Drawing.Size(154, 22);
             this.ProfileRename.Text = "Rename Profile";
             this.ProfileRename.Click += new System.EventHandler(this.ProfileRenameSelect);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(151, 6);
             // 
             // ProfileImport
             // 
             this.ProfileImport.Name = "ProfileImport";
-            this.ProfileImport.Size = new System.Drawing.Size(180, 22);
+            this.ProfileImport.Size = new System.Drawing.Size(154, 22);
             this.ProfileImport.Text = "Import Profile";
             this.ProfileImport.Click += new System.EventHandler(this.ProfileImportSelect);
             // 
             // ProfileExport
             // 
             this.ProfileExport.Name = "ProfileExport";
-            this.ProfileExport.Size = new System.Drawing.Size(180, 22);
+            this.ProfileExport.Size = new System.Drawing.Size(154, 22);
             this.ProfileExport.Text = "Export Profile";
             this.ProfileExport.Click += new System.EventHandler(this.ProfileExportSelect);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(151, 6);
+            // 
+            // ResetProfile
+            // 
+            this.ResetProfile.Name = "ResetProfile";
+            this.ResetProfile.Size = new System.Drawing.Size(154, 22);
+            this.ResetProfile.Text = "Reset Profile";
+            this.ResetProfile.Click += new System.EventHandler(this.ProfileResetSelect);
             // 
             // actionsToolStripMenuItem
             // 
             this.actionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.checkAchievementsCompatibilityToolStripMenuItem});
+            this.checkAchievementsCompatibilityToolStripMenuItem,
+            this.checkConflictsToolStripMenuItem,
+            this.toolStripSeparator4,
+            this.openGameSettingsFolderToolStripMenuItem});
             this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
             this.actionsToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
             this.actionsToolStripMenuItem.Text = "Actions";
@@ -201,9 +221,28 @@
             // checkAchievementsCompatibilityToolStripMenuItem
             // 
             this.checkAchievementsCompatibilityToolStripMenuItem.Name = "checkAchievementsCompatibilityToolStripMenuItem";
-            this.checkAchievementsCompatibilityToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            this.checkAchievementsCompatibilityToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
             this.checkAchievementsCompatibilityToolStripMenuItem.Text = "Check Achievements Status";
             this.checkAchievementsCompatibilityToolStripMenuItem.Click += new System.EventHandler(this.CheckAchievementStatus);
+            // 
+            // checkConflictsToolStripMenuItem
+            // 
+            this.checkConflictsToolStripMenuItem.Name = "checkConflictsToolStripMenuItem";
+            this.checkConflictsToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.checkConflictsToolStripMenuItem.Text = "Check Mod Conflict Status";
+            this.checkConflictsToolStripMenuItem.Click += new System.EventHandler(this.CheckModConflictStatus);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(225, 6);
+            // 
+            // openGameSettingsFolderToolStripMenuItem
+            // 
+            this.openGameSettingsFolderToolStripMenuItem.Name = "openGameSettingsFolderToolStripMenuItem";
+            this.openGameSettingsFolderToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.openGameSettingsFolderToolStripMenuItem.Text = "Open Mod Installation Folder";
+            this.openGameSettingsFolderToolStripMenuItem.Click += new System.EventHandler(this.OpenGameSettingsFolder);
             // 
             // labelSearch
             // 
@@ -231,8 +270,9 @@
             this.modListView.AllColumns.Add(this.columnUID);
             this.modListView.AllColumns.Add(this.columnConflicts);
             this.modListView.AllColumns.Add(this.columnWorkshop);
-            this.modListView.AllColumns.Add(this.columnFilename);
             this.modListView.AllColumns.Add(this.columnAchivements);
+            this.modListView.AllColumns.Add(this.columnSize);
+            this.modListView.AllColumns.Add(this.columnFiles);
             this.modListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -245,8 +285,9 @@
             this.columnUID,
             this.columnConflicts,
             this.columnWorkshop,
-            this.columnFilename,
-            this.columnAchivements});
+            this.columnAchivements,
+            this.columnSize,
+            this.columnFiles});
             this.modListView.Cursor = System.Windows.Forms.Cursors.Default;
             this.modListView.FullRowSelect = true;
             this.modListView.GridLines = true;
@@ -255,7 +296,7 @@
             this.modListView.SelectColumnsOnRightClick = false;
             this.modListView.SelectColumnsOnRightClickBehaviour = BrightIdeasSoftware.ObjectListView.ColumnSelectBehaviour.None;
             this.modListView.ShowGroups = false;
-            this.modListView.Size = new System.Drawing.Size(954, 481);
+            this.modListView.Size = new System.Drawing.Size(1014, 481);
             this.modListView.TabIndex = 47;
             this.modListView.TintSortColumn = true;
             this.modListView.UseCellFormatEvents = true;
@@ -332,12 +373,6 @@
             this.columnWorkshop.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.columnWorkshop.Width = 110;
             // 
-            // columnFilename
-            // 
-            this.columnFilename.AspectName = "Filename";
-            this.columnFilename.Text = "";
-            this.columnFilename.Width = 0;
-            // 
             // columnAchivements
             // 
             this.columnAchivements.AspectName = "Achivements";
@@ -346,16 +381,26 @@
             this.columnAchivements.Text = "ACHIEVEMENTS";
             this.columnAchivements.Width = 110;
             // 
+            // columnSize
+            // 
+            this.columnSize.AspectName = "Size";
+            this.columnSize.Text = "SIZE";
+            // 
+            // columnFiles
+            // 
+            this.columnFiles.AspectName = "FileCount";
+            this.columnFiles.Text = "FILES";
+            // 
             // buttonApply
             // 
             this.buttonApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonApply.Location = new System.Drawing.Point(877, 535);
+            this.buttonApply.Location = new System.Drawing.Point(937, 535);
             this.buttonApply.Name = "buttonApply";
             this.buttonApply.Size = new System.Drawing.Size(75, 24);
             this.buttonApply.TabIndex = 49;
             this.buttonApply.Text = "Apply";
             this.buttonApply.UseVisualStyleBackColor = true;
-            this.buttonApply.Click += new System.EventHandler(this.ApplySettings);
+            this.buttonApply.Click += new System.EventHandler(this.SettingsApply);
             // 
             // contextMenuStripModListView
             // 
@@ -363,35 +408,43 @@
             this.enableSelectedToolStripMenuItem,
             this.disableSelectedToolStripMenuItem,
             this.toolStripSeparator1,
-            this.openFolderToolStripMenuItem});
+            this.openFolderToolStripMenuItem,
+            this.openArchiveToolStripMenuItem});
             this.contextMenuStripModListView.Name = "contextMenuStripModListView";
-            this.contextMenuStripModListView.Size = new System.Drawing.Size(160, 76);
+            this.contextMenuStripModListView.Size = new System.Drawing.Size(197, 120);
             // 
             // enableSelectedToolStripMenuItem
             // 
             this.enableSelectedToolStripMenuItem.Name = "enableSelectedToolStripMenuItem";
-            this.enableSelectedToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.enableSelectedToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.enableSelectedToolStripMenuItem.Text = "Enable Selected";
             this.enableSelectedToolStripMenuItem.Click += new System.EventHandler(this.EnableSelectedMods);
             // 
             // disableSelectedToolStripMenuItem
             // 
             this.disableSelectedToolStripMenuItem.Name = "disableSelectedToolStripMenuItem";
-            this.disableSelectedToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.disableSelectedToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.disableSelectedToolStripMenuItem.Text = "Disable Selected";
             this.disableSelectedToolStripMenuItem.Click += new System.EventHandler(this.DisableSelectedMods);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(156, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(193, 6);
             // 
             // openFolderToolStripMenuItem
             // 
             this.openFolderToolStripMenuItem.Name = "openFolderToolStripMenuItem";
-            this.openFolderToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
-            this.openFolderToolStripMenuItem.Text = "Open Folder";
-            this.openFolderToolStripMenuItem.Click += new System.EventHandler(this.OpenModFolder);
+            this.openFolderToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.openFolderToolStripMenuItem.Text = "Open Workshop Folder";
+            this.openFolderToolStripMenuItem.Click += new System.EventHandler(this.OpenModFolderOrArchive);
+            // 
+            // openArchiveToolStripMenuItem
+            // 
+            this.openArchiveToolStripMenuItem.Name = "openArchiveToolStripMenuItem";
+            this.openArchiveToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.openArchiveToolStripMenuItem.Text = "Open Archive File";
+            this.openArchiveToolStripMenuItem.Click += new System.EventHandler(this.OpenModFolderOrArchive);
             // 
             // labelProfile
             // 
@@ -432,38 +485,26 @@
             this.textBoxGame.Size = new System.Drawing.Size(100, 22);
             this.textBoxGame.TabIndex = 94;
             // 
-            // progressBar1
+            // progressBar
             // 
-            this.progressBar1.Location = new System.Drawing.Point(458, 25);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(100, 23);
-            this.progressBar1.TabIndex = 95;
+            this.progressBar.Location = new System.Drawing.Point(458, 25);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(100, 23);
+            this.progressBar.TabIndex = 95;
             // 
-            // BackgroundWorkderAchievementChecker
+            // BackgroundWorker
             // 
-            this.BackgroundWorkderAchievementChecker.WorkerReportsProgress = true;
-            this.BackgroundWorkderAchievementChecker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkderAchievementCheckerDoWork);
-            this.BackgroundWorkderAchievementChecker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorkderAchievementCheckerProgressChanged);
-            this.BackgroundWorkderAchievementChecker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkderAchievementWorkerCompleted);
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
-            // 
-            // ResetProfile
-            // 
-            this.ResetProfile.Name = "ResetProfile";
-            this.ResetProfile.Size = new System.Drawing.Size(180, 22);
-            this.ResetProfile.Text = "Reset Profile";
-            this.ResetProfile.Click += new System.EventHandler(this.ProfileResetSelect);
+            this.BackgroundWorker.WorkerReportsProgress = true;
+            this.BackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkderDoWork);
+            this.BackgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorkderProgressChanged);
+            this.BackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkderCompleted);
             // 
             // BaseForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(954, 561);
-            this.Controls.Add(this.progressBar1);
+            this.ClientSize = new System.Drawing.Size(1014, 561);
+            this.Controls.Add(this.progressBar);
             this.Controls.Add(this.textBoxGame);
             this.Controls.Add(this.comboBoxProfile);
             this.Controls.Add(this.labelGame);
@@ -501,7 +542,6 @@
         private BrightIdeasSoftware.OLVColumn columnUID;
         private BrightIdeasSoftware.OLVColumn columnConflicts;
         private BrightIdeasSoftware.OLVColumn columnWorkshop;
-        private BrightIdeasSoftware.OLVColumn columnFilename;
         private System.Windows.Forms.Button buttonApply;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripModListView;
         private System.Windows.Forms.ToolStripMenuItem enableSelectedToolStripMenuItem;
@@ -528,10 +568,16 @@
         private BrightIdeasSoftware.OLVColumn columnAchivements;
         private System.Windows.Forms.ToolStripMenuItem actionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem checkAchievementsCompatibilityToolStripMenuItem;
-        private System.Windows.Forms.ProgressBar progressBar1;
-        private System.ComponentModel.BackgroundWorker BackgroundWorkderAchievementChecker;
+        private System.Windows.Forms.ProgressBar progressBar;
+        private System.ComponentModel.BackgroundWorker BackgroundWorker;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem ResetProfile;
+        private System.Windows.Forms.ToolStripMenuItem checkConflictsToolStripMenuItem;
+        private BrightIdeasSoftware.OLVColumn columnSize;
+        private BrightIdeasSoftware.OLVColumn columnFiles;
+        private System.Windows.Forms.ToolStripMenuItem openArchiveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openGameSettingsFolderToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
     }
 }
 

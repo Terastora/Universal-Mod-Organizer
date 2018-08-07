@@ -54,3 +54,9 @@ v0.7-alpha:
 - FIXED: Adding default entries games/profile if one`s missing.
 - FIXED: Not updating active mods list if there are none selected before.
 - Minor Changes
+
+v0.8-alpha:
+- Refactored some code.
+- FEATURE: Changed order prefix in the name so any disabled or updated mod by the author stays on top
+- FEATURE: Mod Size and File Count (after you do something in action). TODO: Keep data in settings.
+- Minor Changes

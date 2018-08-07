@@ -47,21 +47,8 @@ namespace Universal_Mod_Organizer
         // Collection that stores game, profiles, and profile data
         private SortedDictionary<string, SortedDictionary<string, List<string>>> globalProfiles = new SortedDictionary<string, SortedDictionary<string, List<string>>>();
 
-        // Various Regex
-        private Regex regexGetOnlyLineName = new Regex("^#|=\".+$");
-        private Regex regexGetOnlyLineData = new Regex("^(#|[a-z]+|_+)+=\"|\"$");
-
-        private List<ModList> modListForListView = new List<ModList>();
-
-        // List with files and pathes that lead to checksum change
-        private List<string> checksumChangingFoldersAndFiles = new List<string>
-        {
-            "^common/.+$",
-            "^events/.+$",
-            "^map/.+$"
-        };
-
-        private Regex regexChecksum;
+        // List with all the mods loaded and contaning the all required data
+        private List<Mod> modList = new List<Mod>();
 
         // User made changes TODO
         private bool unsavedChanges = false;
@@ -69,8 +56,9 @@ namespace Universal_Mod_Organizer
         public BaseForm()
         {
             InitializeComponent();
+
+            // This is used for automatic column resizing.
             defaultFormWidth = Width - columnName.Width + columnName.MinimumWidth;
-            regexChecksum = new Regex(string.Join("|", checksumChangingFoldersAndFiles.Select(item => item)));
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
@@ -131,13 +119,6 @@ namespace Universal_Mod_Organizer
 
         private void SettingsLoad()
         {
-            // TODO 
-            /*
-             * missing xml doc
-             * missing entries
-             * misisng default profiles
-             * */
-
             // If we didn`t find dataset.xml file then we need to create new one instead of loading settings.
             if (!File.Exists(@"dataset.xml"))
             {
@@ -221,17 +202,17 @@ namespace Universal_Mod_Organizer
             // Update current selected profile with new changes from list view.
 
             // We sort it by order as it is important so save correctly.
-            modListForListView.Sort((x, y) => x.Order.CompareTo(y.Order));
+            modList.Sort((x, y) => x.Order.CompareTo(y.Order));
 
             // Temporary enableModsList that we populate with data
             var enabledModsList = new List<string>();
 
             // Put only active mods there.
-            for (int i = 0; i < modListForListView.Count; i++)
+            for (int i = 0; i < modList.Count; i++)
             {
-                if (modListForListView[i].Enabled == Helper.SymbolYes)
+                if (modList[i].Enabled == Helper.SymbolYes)
                 {
-                    enabledModsList.Add(modListForListView[i].Filename);
+                    enabledModsList.Add(modList[i].Filename);
                 }
             }
 
@@ -269,310 +250,10 @@ namespace Universal_Mod_Organizer
             }
 
             docText.Save(@"dataset.xml");
-            WriteDataToGameSettingsFile(enabledModsList);
+            SettingsGameUpdate(enabledModsList);
         }
 
-        private void ProfileAddSelect(object sender, EventArgs e)
-        {
-            // Laziness...
-            var isCopy = ((ToolStripMenuItem)sender).Name.Equals("ProfileCopy");
-            var profileNameInTextBox = isCopy ? (currentProfile + " - Copy") : "new profile";
-            var isAddOrCopy = isCopy ? "Copy" : "Add";
-
-            string newProfile = Interaction.InputBox("Enter profile name:", isAddOrCopy + " profile", profileNameInTextBox, Location.X + (Width / 3), Location.Y + (Height / 3));
-
-            if (string.IsNullOrEmpty(newProfile))
-            {
-                return;
-            }
-
-            var index = comboBoxProfile.FindString(newProfile);
-
-            // We did not find any profiles with that name.
-            if (index < 0)
-            {
-                if (isCopy)
-                {
-                    // Try get existing mod list from current profile (the one we make copy from).
-                    globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
-                    globalProfiles[currentGame].Add(newProfile, profileModsList);
-                }
-                else
-                {
-                    // Add to global profiles under game name with empty list.
-                    globalProfiles[currentGame].Add(newProfile, new List<string>());
-                }
-
-                currentProfile = newProfile;
-                SetComboBoxActiveProfile();
-                ParseModsList();
-            }
-
-            // Profile already exists
-            if (index >= 0)
-            {
-                MessageBox.Show("Profile with name \'" + newProfile + "\' already exists!");
-            }
-        }
-
-        private void ProfileDeleteSelect(object sender, EventArgs e)
-        {
-            if (comboBoxProfile.SelectedItem.Equals("Default"))
-            {
-                MessageBox.Show("Can not delete Default profile.");
-                return;
-            }
-
-            if (MessageBox.Show("Delete '" + comboBoxProfile.SelectedItem + "' profile?", string.Empty, MessageBoxButtons.YesNo) == DialogResult.Yes)
-            {
-                // Remove the dictionary key with the profile and mod list inside
-                globalProfiles[currentGame].Remove(comboBoxProfile.SelectedValue.ToString());
-                currentProfile = "Default";
-                SetComboBoxActiveProfile();
-                ParseModsList();
-            }
-        }
-
-        private void ProfileRenameSelect(object sender, EventArgs e)
-        {
-            string newProfile = Interaction.InputBox("Enter new profile name:", "Rename profile", currentProfile, Location.X + (Width / 3), Location.Y + (Height / 3));
-
-            if (string.IsNullOrEmpty(newProfile))
-            {
-                return;
-            }
-
-            // Replace activegame activeprofile with new data, while keeping the rest untouched.
-
-            // Get current enabled mod list for profile
-            globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
-
-            // Delete the profile to be renamed
-            globalProfiles[currentGame].Remove(currentProfile);
-
-            // Add same profile with new name
-            globalProfiles[currentGame].Add(newProfile, profileModsList);
-
-            currentProfile = newProfile;
-            SetComboBoxActiveProfile();
-            ParseModsList();
-        }
-
-        private void ProfileImportSelect(object sender, EventArgs e)
-        {
-            OpenFileDialog importProfileDialog = new OpenFileDialog();
-            importProfileDialog.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            importProfileDialog.Title = "Select File";
-            importProfileDialog.DefaultExt = "xml";
-            importProfileDialog.Filter = "xml files (*.xml)|*.xml|All files (*.*)|*.*";
-            importProfileDialog.FileName = currentProfile + ".xml";
-            importProfileDialog.CheckPathExists = true;
-            if (importProfileDialog.ShowDialog() == DialogResult.OK)
-            {
-                var imprortProfileDoc = XDocument.Load(importProfileDialog.FileName);
-
-                foreach (var gameEntry in imprortProfileDoc.Elements())
-                {
-                    var gameName = gameEntry.Attribute("Name").Value;
-
-                    foreach (var profileEntry in gameEntry.Elements())
-                    {
-                        var profileName = profileEntry.Attribute("Name").Value;
-
-                        // Generate enabled mods list to add to dict.
-                        var enabledModsList = new List<string>();
-
-                        foreach (var modEntry in profileEntry.Elements())
-                        {
-                            enabledModsList.Add(modEntry.Attribute("Path").Value);
-                        }
-
-                        if (globalProfiles[gameName].ContainsKey(profileName))
-                        {
-                            profileName = Interaction.InputBox("Profile already exists! Enter new profile name:", "Add profile", profileName + " - changeme", Location.X + (Width / 3), Location.Y + (Height / 3));
-                        }
-
-                        if (string.IsNullOrEmpty(profileName))
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            globalProfiles[gameName].Add(profileName, enabledModsList);
-
-                            // Check if our active game is same as in the imported profile. If not, just add but don`t activate.
-                            if (gameName.Equals(currentGame))
-                            {
-                                // Activate profile.
-                                currentProfile = profileName;
-                                SetComboBoxActiveProfile();
-                                ParseModsList();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void ProfileExportSelect(object sender, EventArgs e)
-        {
-            SaveFileDialog exportProfileDialog = new SaveFileDialog();
-            exportProfileDialog.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            exportProfileDialog.Title = "Select File";
-            exportProfileDialog.DefaultExt = "xml";
-            exportProfileDialog.Filter = "xml files (*.xml)|*.xml|All files (*.*)|*.*";
-            exportProfileDialog.FileName = currentProfile + ".xml";
-            exportProfileDialog.CheckPathExists = true;
-
-            if (exportProfileDialog.ShowDialog() == DialogResult.OK)
-            {
-                // Save the file.
-                var docText = new XDocument();
-                XElement elementGame = new XElement("Game", new XAttribute("Name", currentGame));
-                docText.Add(elementGame);
-
-                foreach (var dictItemProfile in globalProfiles[currentGame])
-                {
-                    if (dictItemProfile.Key.Equals(currentProfile))
-                    {
-                        XElement elementProfile = new XElement("Profile", new XAttribute("Name", dictItemProfile.Key));
-                        elementGame.Add(elementProfile);
-
-                        foreach (var dictItemMod in dictItemProfile.Value)
-                        {
-                            XElement elementMods = new XElement("Mod", new XAttribute("Path", dictItemMod));
-                            elementProfile.Add(elementMods);
-                        }
-                    }
-                }
-
-                docText.Save(exportProfileDialog.FileName);
-            }
-        }
-
-        private void ProfileResetSelect(object sender, EventArgs e)
-        {
-            // This resets profile to clean state. Disable all, sort by name, reorder.            
-
-            // Disable All
-            for (int i = 0; i < modListView.Items.Count; i++)
-            {
-                var selectedIndex = modListView.Items[i].Index;
-                var selectedSubItem = modListView.GetSubItem(selectedIndex, columnEnabled.DisplayIndex);
-                var idx = modListForListView.IndexOf(new ModList(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, modListView.GetSubItem(selectedIndex, columnFilename.DisplayIndex).Text), 0, modListForListView.Count);
-
-                selectedSubItem.Text = string.Empty;
-                modListForListView[idx].Enabled = string.Empty;
-            }
-
-            modListView.Sort(columnName, SortOrder.Ascending);
-            RenumberOrder();
-            modListView.Sort(columnOrder, SortOrder.Ascending);
-
-            unsavedChanges = true;
-        }
-
-        private void AnotherGameSelect(object sender, EventArgs e)
-        {
-            foreach (ToolStripMenuItem item in ((ToolStripMenuItem)sender).GetCurrentParent().Items)
-            {
-                if (item == sender)
-                {
-                    item.Checked = true;
-                    currentGame = item.Text;
-                    textBoxGame.Text = currentGame;
-                }
-
-                if ((item != null) && (item != sender))
-                {
-                    item.Checked = false;
-                }
-            }
-
-            AskToApplyChanges();
-
-            currentProfile = "Default";
-            SetComboBoxActiveProfile();
-
-            PopulateModsList();
-            modListView.SetObjects(modListForListView);
-            ParseModsList();
-        }
-
-        private void SelectGameFromSettings()
-        {
-            foreach (ToolStripMenuItem item in MenuGames.DropDownItems)
-            {
-                if (item.Text.Equals(currentGame))
-                {
-                    item.Checked = true;
-                }
-            }
-        }
-
-        private void SetComboBoxActiveProfile()
-        {
-            comboBoxProfile.DataSource = globalProfiles[currentGame].Keys.ToArray();
-
-            for (int i = 0; i < comboBoxProfile.Items.Count; i++)
-            {
-                int index = comboBoxProfile.FindString(currentProfile);
-                comboBoxProfile.SelectedIndex = index;
-            }
-        }
-
-        private void ApplySettings(object sender, EventArgs e)
-        {
-            SettingsSave();
-        }
-
-        private void WriteDataToModFile(ModList item, string gameFolder)
-        {
-            var fileName = gameFolder + item.Filename;
-
-            string[] allFileLines = File.ReadAllLines(fileName);
-
-            // Deleting the file
-            File.Delete(fileName);
-
-            using (StreamWriter sw = File.AppendText(fileName))
-            {
-                var regexMatchLineName = new Regex("^name=.*$");
-                var regexMatchLineNameIrrelevantData = new Regex("^#(original_name|achievement_compatible)=.*$");
-
-                foreach (string line in allFileLines)
-                {
-                    Match matchName = regexMatchLineName.Match(line);
-                    Match matchOriginalName = regexMatchLineNameIrrelevantData.Match(line);
-
-                    if (matchName.Success)
-                    {
-                        // Write Name with Order and Original Name Commented
-                        if (item.Enabled.Equals(Helper.SymbolYes))
-                        {
-                            sw.WriteLine("name=\"" + item.Order + " " + item.Name + "\"");
-                        }
-                        else
-                        {
-                            sw.WriteLine("name=\"" + item.Name + "\"");
-                        }
-
-                        sw.WriteLine("#original_name=\"" + item.Name + "\"");
-                        sw.WriteLine("#achievement_compatible=\"" + item.Achivements + "\"");
-                    }
-                    else if (matchOriginalName.Success)
-                    {
-                        // We have found another one original name, skip.
-                    }
-                    else
-                    {
-                        sw.WriteLine(line);
-                    }
-                }
-            }
-        }
-
-        private void WriteDataToGameSettingsFile(List<string> enabledModsList)
+        private void SettingsGameUpdate(List<string> enabledModsList)
         {
             // For all games.
             var gameFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Paradox Interactive\" + currentGame + @"\";
@@ -645,10 +326,215 @@ namespace Universal_Mod_Organizer
             }
 
             // Also edit the .mod file as we are changing the mod name
-            foreach (var item in modListForListView)
+            foreach (var item in modList)
             {
-                WriteDataToModFile(item, gameFolder);
+                item.WriteDataToModFile(GetGameSettingsFolder());
             }
+        }
+
+        private void SettingsApply(object sender, EventArgs e)
+        {
+            SettingsSave();
+        }
+
+        private void ProfileAddSelect(object sender, EventArgs e)
+        {
+            // Laziness...
+            var isCopy = ((ToolStripMenuItem)sender).Name.Equals("ProfileCopy");
+            var profileNameInTextBox = isCopy ? (currentProfile + " - Copy") : "new profile";
+            var isAddOrCopy = isCopy ? "Copy" : "Add";
+
+            string newProfile = Interaction.InputBox("Enter profile name:", isAddOrCopy + " profile", profileNameInTextBox, Location.X + (Width / 3), Location.Y + (Height / 3));
+
+            if (string.IsNullOrEmpty(newProfile))
+            {
+                return;
+            }
+
+            var index = comboBoxProfile.FindString(newProfile);
+
+            // We did not find any profiles with that name.
+            if (index < 0)
+            {
+                if (isCopy)
+                {
+                    // Try get existing mod list from current profile (the one we make copy from).
+                    globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
+                    globalProfiles[currentGame].Add(newProfile, profileModsList);
+                }
+                else
+                {
+                    // Add to global profiles under game name with empty list.
+                    globalProfiles[currentGame].Add(newProfile, new List<string>());
+                }
+
+                currentProfile = newProfile;
+                SetComboBoxActiveProfile();
+                ApplyProfileData();
+            }
+
+            // Profile already exists
+            if (index >= 0)
+            {
+                MessageBox.Show("Profile with name \'" + newProfile + "\' already exists!");
+            }
+        }
+
+        private void ProfileDeleteSelect(object sender, EventArgs e)
+        {
+            if (comboBoxProfile.SelectedItem.Equals("Default"))
+            {
+                MessageBox.Show("Can not delete Default profile.");
+                return;
+            }
+
+            if (MessageBox.Show("Delete '" + comboBoxProfile.SelectedItem + "' profile?", string.Empty, MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                // Remove the dictionary key with the profile and mod list inside
+                globalProfiles[currentGame].Remove(comboBoxProfile.SelectedValue.ToString());
+                currentProfile = "Default";
+                SetComboBoxActiveProfile();
+                ApplyProfileData();
+            }
+        }
+
+        private void ProfileRenameSelect(object sender, EventArgs e)
+        {
+            string newProfile = Interaction.InputBox("Enter new profile name:", "Rename profile", currentProfile, Location.X + (Width / 3), Location.Y + (Height / 3));
+
+            if (string.IsNullOrEmpty(newProfile))
+            {
+                return;
+            }
+
+            // Replace activegame activeprofile with new data, while keeping the rest untouched.
+
+            // Get current enabled mod list for profile
+            globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
+
+            // Delete the profile to be renamed
+            globalProfiles[currentGame].Remove(currentProfile);
+
+            // Add same profile with new name
+            globalProfiles[currentGame].Add(newProfile, profileModsList);
+
+            currentProfile = newProfile;
+            SetComboBoxActiveProfile();
+            ApplyProfileData();
+        }
+
+        private void ProfileImportSelect(object sender, EventArgs e)
+        {
+            OpenFileDialog importProfileDialog = new OpenFileDialog();
+            importProfileDialog.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            importProfileDialog.Title = "Select File";
+            importProfileDialog.DefaultExt = "xml";
+            importProfileDialog.Filter = "xml files (*.xml)|*.xml|All files (*.*)|*.*";
+            importProfileDialog.FileName = currentProfile + ".xml";
+            importProfileDialog.CheckPathExists = true;
+            if (importProfileDialog.ShowDialog() == DialogResult.OK)
+            {
+                var imprortProfileDoc = XDocument.Load(importProfileDialog.FileName);
+
+                foreach (var gameEntry in imprortProfileDoc.Elements())
+                {
+                    var gameName = gameEntry.Attribute("Name").Value;
+
+                    foreach (var profileEntry in gameEntry.Elements())
+                    {
+                        var profileName = profileEntry.Attribute("Name").Value;
+
+                        // Generate enabled mods list to add to dict.
+                        var enabledModsList = new List<string>();
+
+                        foreach (var modEntry in profileEntry.Elements())
+                        {
+                            enabledModsList.Add(modEntry.Attribute("Path").Value);
+                        }
+
+                        if (globalProfiles[gameName].ContainsKey(profileName))
+                        {
+                            profileName = Interaction.InputBox("Profile already exists! Enter new profile name:", "Add profile", profileName + " - changeme", Location.X + (Width / 3), Location.Y + (Height / 3));
+                        }
+
+                        if (string.IsNullOrEmpty(profileName))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            globalProfiles[gameName].Add(profileName, enabledModsList);
+
+                            // Check if our active game is same as in the imported profile. If not, just add but don`t activate.
+                            if (gameName.Equals(currentGame))
+                            {
+                                // Activate profile.
+                                currentProfile = profileName;
+                                SetComboBoxActiveProfile();
+                                ApplyProfileData();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ProfileExportSelect(object sender, EventArgs e)
+        {
+            SaveFileDialog exportProfileDialog = new SaveFileDialog();
+            exportProfileDialog.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            exportProfileDialog.Title = "Select File";
+            exportProfileDialog.DefaultExt = "xml";
+            exportProfileDialog.Filter = "xml files (*.xml)|*.xml|All files (*.*)|*.*";
+            exportProfileDialog.FileName = currentProfile + ".xml";
+            exportProfileDialog.CheckPathExists = true;
+
+            if (exportProfileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Save the file.
+                var docText = new XDocument();
+                XElement elementGame = new XElement("Game", new XAttribute("Name", currentGame));
+                docText.Add(elementGame);
+
+                foreach (var dictItemProfile in globalProfiles[currentGame])
+                {
+                    if (dictItemProfile.Key.Equals(currentProfile))
+                    {
+                        XElement elementProfile = new XElement("Profile", new XAttribute("Name", dictItemProfile.Key));
+                        elementGame.Add(elementProfile);
+
+                        foreach (var dictItemMod in dictItemProfile.Value)
+                        {
+                            XElement elementMods = new XElement("Mod", new XAttribute("Path", dictItemMod));
+                            elementProfile.Add(elementMods);
+                        }
+                    }
+                }
+
+                docText.Save(exportProfileDialog.FileName);
+            }
+        }
+
+        private void ProfileResetSelect(object sender, EventArgs e)
+        {
+            // This resets profile to clean state. Disable all, sort by name, reorder.            
+
+            // Disable All
+            for (int i = 0; i < modListView.Items.Count; i++)
+            {
+                var selectedIndex = modListView.Items[i].Index;
+                var selectedSubItem = modListView.GetSubItem(selectedIndex, columnEnabled.DisplayIndex);
+                var idx = modList.FindIndex(x => x.UID.Contains(modListView.GetSubItem(selectedIndex, columnUID.DisplayIndex).Text));
+
+                selectedSubItem.Text = string.Empty;
+                modList[idx].Enabled = string.Empty;
+            }
+
+            modListView.Sort(columnName, SortOrder.Ascending);
+            RenumberOrder();
+            modListView.Sort(columnOrder, SortOrder.Ascending);
+
+            unsavedChanges = true;
         }
 
         private void ProfileSelectedByUser(object sender, EventArgs e)
@@ -657,15 +543,60 @@ namespace Universal_Mod_Organizer
 
             // When new profile selected clean any
             currentProfile = comboBoxProfile.SelectedValue.ToString();
-            ParseModsList();
+            ApplyProfileData();
+        }
+
+        private void AnotherGameSelect(object sender, EventArgs e)
+        {
+            foreach (ToolStripMenuItem item in ((ToolStripMenuItem)sender).GetCurrentParent().Items)
+            {
+                if (item == sender)
+                {
+                    item.Checked = true;
+                    currentGame = item.Text;
+                    textBoxGame.Text = currentGame;
+                }
+
+                if ((item != null) && (item != sender))
+                {
+                    item.Checked = false;
+                }
+            }
+
+            AskToApplyChanges();
+
+            currentProfile = "Default";
+            SetComboBoxActiveProfile();
+
+            LoadMods();
+            modListView.SetObjects(modList);
+            ApplyProfileData();
+        }
+
+        private void SelectGameFromSettings()
+        {
+            foreach (ToolStripMenuItem item in MenuGames.DropDownItems)
+            {
+                if (item.Text.Equals(currentGame))
+                {
+                    item.Checked = true;
+                }
+            }
+        }
+
+        private void SetComboBoxActiveProfile()
+        {
+            comboBoxProfile.DataSource = globalProfiles[currentGame].Keys.ToArray();
+
+            for (int i = 0; i < comboBoxProfile.Items.Count; i++)
+            {
+                int index = comboBoxProfile.FindString(currentProfile);
+                comboBoxProfile.SelectedIndex = index;
+            }
         }
 
         private void AskToApplyChanges()
         {
-            // TODO
-            /* If user deletes or add profiles what happends?
-             * */
-
             if (unsavedChanges)
             {
                 if (MessageBox.Show("You have unsaved changes.\nApply changes?", string.Empty, MessageBoxButtons.YesNo) == DialogResult.Yes)
@@ -679,57 +610,111 @@ namespace Universal_Mod_Organizer
 
         private void CheckAchievementStatus(object sender, EventArgs e)
         {
-            BackgroundWorkderAchievementChecker.RunWorkerAsync();
+            BackgroundWorker.RunWorkerAsync("achievement");
         }
 
-        private void BackgroundWorkderAchievementCheckerDoWork(object sender, DoWorkEventArgs e)
+        private void CheckModConflictStatus(object sender, EventArgs e)
         {
-            for (int i = 0; i < modListForListView.Count; i++)
+            BackgroundWorker.RunWorkerAsync("modconflicts");
+        }
+
+        private void BackgroundWorkderDoWork(object sender, DoWorkEventArgs e)
+        {
+            if (e.Argument.Equals("achievement"))
             {
-                BackgroundWorkderAchievementChecker.ReportProgress((int)Math.Round(((double)i / 100) * modListForListView.Count, 0));
-                string zipPath = modListForListView[i].Archive;
-
-                // Assume that all mods are compatible by default
-                modListForListView[i].Achivements = "yes";
-
-                // In case it is very short or empty.
-                if (zipPath.Length < 5)
+                for (int i = 0; i < modList.Count; i++)
                 {
-                    continue;
+                    BackgroundWorker.ReportProgress((int)Math.Round(((double)i / 100) * modList.Count, 0));
+                    modList[i].GetAchievements();
                 }
 
-                using (ZipArchive archive = ZipFile.OpenRead(zipPath))
-                {
-                    foreach (ZipArchiveEntry entry in archive.Entries)
-                    {
-                        // Found entry that probably changes checksum
-                        Match match = regexChecksum.Match(entry.ToString());
-
-                        if (match.Success)
-                        {
-                            modListForListView[i].Achivements = "no";
-                        }
-                    }
-                }
+                BackgroundWorker.ReportProgress(0);
             }
 
-            BackgroundWorkderAchievementChecker.ReportProgress(0);
+            if (e.Argument.Equals("modconflicts"))
+            {
+                for (int i = 0; i < modList.Count; i++)
+                {
+                    BackgroundWorker.ReportProgress((int)Math.Round(((double)i / 100) * modList.Count, 0));
+                    modList[i].GetConflicts();
+                }
+
+                BackgroundWorker.ReportProgress(0);
+            }
         }
 
-        private void BackgroundWorkderAchievementCheckerProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void BackgroundWorkderProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             // Change the value of the ProgressBar to the BackgroundWorker progress.
-            progressBar1.Value = e.ProgressPercentage;
-
-            // Set the text.
-            this.Text = e.ProgressPercentage.ToString();
+            progressBar.Value = e.ProgressPercentage;
         }
 
-        private void BackgroundWorkderAchievementWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void BackgroundWorkderCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             modListView.BuildList();
             modListView.Sort(columnOrder, SortOrder.Ascending);
             RenumberOrder();
         }
+
+        private void OpenGameSettingsFolder(object sender, EventArgs e)
+        {
+            Process.Start(GetGameSettingsFolder());
+        }
+
+        private void OpenModFolderOrArchive(object sender, EventArgs e)
+        {
+            // Ask if opening too many.
+            if (modListView.SelectedIndices.Count > 5)
+            {
+                if (MessageBox.Show("There are more than " + modListView.SelectedIndices.Count + " entries to open, you are sure?", string.Empty, MessageBoxButtons.YesNo) == DialogResult.No)
+                {
+                    return;
+                }
+            }
+
+            if (modListView.SelectedIndices.Count > 0)
+            {
+                for (int i = 0; i <= modListView.SelectedIndices.Count - 1; i++)
+                {
+                    var idx = modList.FindIndex(x => x.UID.Contains(modListView.GetSubItem(modListView.SelectedIndices[i], columnUID.DisplayIndex).Text));
+
+                    if (sender.ToString().Equals("Open Workshop Folder"))
+                    {
+                        try
+                        {
+                            var filePath = Path.GetDirectoryName(modList[idx].Archive);
+                            Process.Start(filePath);
+                        }
+                        catch
+                        {
+                            // We don`t need error handler here. So nothing to do.
+                        }
+                    }
+
+                    if (sender.ToString().Equals("Open Archive File"))
+                    {
+                        try
+                        {
+                            var filePath = modList[idx].Archive;
+                            Process.Start(filePath);
+                        }
+                        catch
+                        {
+                            // We don`t need error handler here. So nothing to do.
+                        }
+                    }
+                }
+            }
+        }
+
+        private void TEST()
+        {
+            //  modList[0].ModFiles.Intersect
+        }
     }
 }
+
+/* TODO:
+ * http://csharphelper.com/blog/2014/07/compare-directories-in-c/
+ * https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/how-to-compare-the-contents-of-two-folders-linq
+ * */
