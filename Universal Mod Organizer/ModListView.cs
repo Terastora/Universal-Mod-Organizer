@@ -92,7 +92,7 @@ namespace Universal_Mod_Organizer
 
             // Set objects source.
             modListView.SetObjects(modList);
-            
+
             // Load mods
             LoadMods();
 
@@ -100,6 +100,11 @@ namespace Universal_Mod_Organizer
 
             // Build final listview.
             modListView.BuildList();
+
+            // Check achievements and mod conflicts in background.
+            BackgroundWorker.RunWorkerAsync();
+
+            modLoadComplete = true;
         }
 
         private void LoadMods()
@@ -126,30 +131,30 @@ namespace Universal_Mod_Organizer
 
         private void ApplyProfileData()
         {
-           // This parses mod list according to selected profile etc.
-           globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
+            // This parses mod list according to selected profile etc.
+            globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
 
-           // Revert to "clean state" so we can apply profile to existing mod list.
-           modList.ForEach(u =>
-           {
-               // Get index and availability of the mod in the our list i.e. it is enabled and its position in order
-               var idx = profileModsList.IndexOf(u.Filename);
+            // Revert to "clean state" so we can apply profile to existing mod list.
+            modList.ForEach(u =>
+            {
+                // Get index and availability of the mod in the our list i.e. it is enabled and its position in order
+                var idx = profileModsList.IndexOf(u.Filename);
 
-               // Clean ordering if any.
-               if (idx < 0)
-               {
-                   // We don`t. So clean enabled state and order.
-                   u.Enabled = string.Empty;
-                   u.Order = "9999"; // think about workaround
-               }
-           
-               if (idx >= 0)
-               {
-                   // We do.
-                   u.Enabled = Helper.SymbolYes;
-                   u.Order = idx.ToString("D3");
-               }
-           });
+                // Clean ordering if any.
+                if (idx < 0)
+                {
+                    // We don`t. So clean enabled state and order.
+                    u.Enabled = string.Empty;
+                    u.Order = "9999"; // think about workaround
+                }
+
+                if (idx >= 0)
+                {
+                    // We do.
+                    u.Enabled = Helper.SymbolYes;
+                    u.Order = idx.ToString("D3");
+                }
+            });
 
             modListView.BuildList();
             modListView.Sort(columnOrder, SortOrder.Ascending);
@@ -166,6 +171,33 @@ namespace Universal_Mod_Organizer
             if (e.Button == MouseButtons.Right)
             {
                 contextMenuStripModListView.Show(Cursor.Position);
+            }
+
+            if (e.Button == MouseButtons.Left)
+            {
+#pragma warning disable S1066 // Collapsible "if" statements should be merged
+                if (modLoadComplete && modListView.SelectedItems.Count > 0 && modList.Count > 0)
+#pragma warning restore S1066 // Collapsible "if" statements should be merged
+                {
+                    var selectedIndex = modListView.SelectedIndex;
+                    var selectedSubItem = modListView.GetSubItem(selectedIndex, columnUID.DisplayIndex);
+                    var foundModIndex = modList.FindIndex(x => x.UID.Contains(selectedSubItem.Text));
+
+                    // Apply highlight.
+                    modList.ForEach(u =>
+                    {
+                        if (modList[foundModIndex].ModConflicts.ContainsKey(u.UID))
+                        {
+                            u.Highlight = true;
+                        }
+                        else
+                        {
+                            u.Highlight = false;
+                        }
+                    });
+
+                    modListView.BuildList();
+                }
             }
         }
 
@@ -188,7 +220,7 @@ namespace Universal_Mod_Organizer
                     selectedSubItem.Text = string.Empty;
                     modList[idx].Enabled = selectedSubItem.Text;
                 }
-                
+
                 unsavedChanges = true;
                 modListView.Refresh();
             }
@@ -314,6 +346,39 @@ namespace Universal_Mod_Organizer
             if (e.ColumnIndex == columnSize.DisplayIndex)
             {
                 e.SubItem.Text = ByteSize.FromBytes(Convert.ToDouble(e.CellValue)).ToString();
+            }
+
+            if (e.ColumnIndex == columnFiles.DisplayIndex)
+            {
+#pragma warning disable S1066 // Collapsible "if" statements should be merged
+                if (e.SubItem.Text == "0")
+#pragma warning restore S1066 // Collapsible "if" statements should be merged
+                {
+                    e.SubItem.Text = "???";
+                }
+            }
+
+            if (e.ColumnIndex == columnConflicts.DisplayIndex)
+            {
+#pragma warning disable S1066 // Collapsible "if" statements should be merged
+                if (e.SubItem.Text == "0")
+#pragma warning restore S1066 // Collapsible "if" statements should be merged
+                {
+                    e.SubItem.Text = "none";
+                }
+            }
+
+            if (e.ColumnIndex == columnUID.DisplayIndex)
+            {
+                var foundModIndex = modList.FindIndex(x => x.UID.Contains(e.CellValue.ToString()));
+
+                if (modList[foundModIndex].Highlight)
+                {
+                    foreach (OLVListSubItem item in modListView.Items[e.RowIndex].SubItems)
+                    {
+                        item.BackColor = Color.IndianRed;
+                    }
+                }
             }
         }
 

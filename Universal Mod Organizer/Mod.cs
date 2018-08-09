@@ -29,7 +29,7 @@ namespace Universal_Mod_Organizer
         public string Name;
         public string Version;
         public string UID;
-        public string Conflicts;
+        public int Conflicts;
         public string Workshop;
         public string Filename;
         public string Archive;
@@ -37,6 +37,8 @@ namespace Universal_Mod_Organizer
         public string Achivements;
         public int FileCount;
         public List<string> ModFiles;
+        public Dictionary<string, List<string>> ModConflicts;
+        public bool Highlight;
     }
 
     public sealed class Mod : IEquatable<Mod>
@@ -67,13 +69,14 @@ namespace Universal_Mod_Organizer
                 Name = "N/A",
                 Version = "0.0",
                 UID = "none",
-                Conflicts = "none",
+                Conflicts = 0,
                 Workshop = string.Empty,
                 Filename = "none",
                 Archive = string.Empty,
                 Size = 0,
                 Achivements = "???",
-                ModFiles = new List<string>()
+                ModFiles = new List<string>(),
+                ModConflicts = new Dictionary<string, List<string>>()
             };
 
             // This is used for mods that change checksum.
@@ -98,13 +101,17 @@ namespace Universal_Mod_Organizer
 
         public string UID { get => modStruct.UID; set => modStruct.UID = value; }
 
-        public string Conflicts { get => modStruct.Conflicts; set => modStruct.Conflicts = value; }
+        public int Conflicts { get => modStruct.Conflicts; set => modStruct.Conflicts = value; }
 
         public long Size { get => modStruct.Size; set => modStruct.Size = value; }
 
         public string Workshop { get => modStruct.Workshop; set => modStruct.Workshop = value; }
 
         public int FileCount { get => modStruct.FileCount; set => modStruct.FileCount = value; }
+
+        public bool Highlight { get => modStruct.Highlight; set => modStruct.Highlight = value; }
+
+        public Dictionary<string, List<string>> ModConflicts { get => modStruct.ModConflicts; set => modStruct.ModConflicts = value; }
 
         public List<string> ModFiles { get => modStruct.ModFiles; }
 
@@ -120,7 +127,9 @@ namespace Universal_Mod_Organizer
 
         public void GetModInfo()
         {
+            // Defaults.
             modStruct.Filename = @"mod\" + Path.GetFileName(FilePath);
+            modStruct.UID = modStruct.Filename;
 
             foreach (var line in File.ReadLines(FilePath))
             {
@@ -160,40 +169,13 @@ namespace Universal_Mod_Organizer
 
             if (!modStruct.Archive.Equals(string.Empty))
             {
-                modStruct.Size = new FileInfo(modStruct.Archive).Length;
-            }
-        }
-
-        public void GetConflicts()
-        {
-            if (modStruct.Archive.Equals(string.Empty))
-            {
-                modStruct.Conflicts = "???";
-            }
-
-            modStruct.FileCount = 0;
-
-            string zipPath = modStruct.Archive;
-
-            // Assume that all mods are non conflicting by default.
-            modStruct.Conflicts = "none";
-
-            // In case it is very short or empty.
-            if (zipPath.Length < 5)
-            {
-                return;
-            }
-
-            using (ZipArchive archive = ZipFile.OpenRead(zipPath))
-            {
-                foreach (var entry in archive.Entries)
+                if (File.Exists(modStruct.Archive))
                 {
-                    modStruct.FileCount++;
-
-                    if (!entry.ToString().Equals("descriptor.mod"))
-                    {
-                        modStruct.ModFiles.Add(entry.ToString());
-                    }
+                    modStruct.Size = new FileInfo(modStruct.Archive).Length;
+                }
+                else
+                {
+                    modStruct.Archive = string.Empty;
                 }
             }
         }
@@ -223,6 +205,12 @@ namespace Universal_Mod_Organizer
                 foreach (var entry in archive.Entries)
                 {
                     modStruct.FileCount++;
+
+                    // Populate files list for that mod.
+                    if (!entry.ToString().Equals("descriptor.mod"))
+                    {
+                        modStruct.ModFiles.Add(entry.ToString());
+                    }
 
                     // Found entry that probably changes checksum.
                     Match match = regexChecksum.Match(entry.ToString());

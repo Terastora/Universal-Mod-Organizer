@@ -47,7 +47,6 @@
             this.ResetProfile = new System.Windows.Forms.ToolStripMenuItem();
             this.actionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkAchievementsCompatibilityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.checkConflictsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.openGameSettingsFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.labelSearch = new System.Windows.Forms.Label();
@@ -63,6 +62,7 @@
             this.columnAchivements = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.columnSize = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.columnFiles = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.columnHighlight = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.buttonApply = new System.Windows.Forms.Button();
             this.contextMenuStripModListView = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.enableSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -211,7 +211,6 @@
             // 
             this.actionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.checkAchievementsCompatibilityToolStripMenuItem,
-            this.checkConflictsToolStripMenuItem,
             this.toolStripSeparator4,
             this.openGameSettingsFolderToolStripMenuItem});
             this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
@@ -221,26 +220,19 @@
             // checkAchievementsCompatibilityToolStripMenuItem
             // 
             this.checkAchievementsCompatibilityToolStripMenuItem.Name = "checkAchievementsCompatibilityToolStripMenuItem";
-            this.checkAchievementsCompatibilityToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
-            this.checkAchievementsCompatibilityToolStripMenuItem.Text = "Check Achievements Status";
-            this.checkAchievementsCompatibilityToolStripMenuItem.Click += new System.EventHandler(this.CheckAchievementStatus);
-            // 
-            // checkConflictsToolStripMenuItem
-            // 
-            this.checkConflictsToolStripMenuItem.Name = "checkConflictsToolStripMenuItem";
-            this.checkConflictsToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
-            this.checkConflictsToolStripMenuItem.Text = "Check Mod Conflict Status";
-            this.checkConflictsToolStripMenuItem.Click += new System.EventHandler(this.CheckModConflictStatus);
+            this.checkAchievementsCompatibilityToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.checkAchievementsCompatibilityToolStripMenuItem.Text = "Check Achievements and Conflicts";
+            this.checkAchievementsCompatibilityToolStripMenuItem.Click += new System.EventHandler(this.CheckAchievementAndConflictStatus);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(225, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(255, 6);
             // 
             // openGameSettingsFolderToolStripMenuItem
             // 
             this.openGameSettingsFolderToolStripMenuItem.Name = "openGameSettingsFolderToolStripMenuItem";
-            this.openGameSettingsFolderToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.openGameSettingsFolderToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
             this.openGameSettingsFolderToolStripMenuItem.Text = "Open Mod Installation Folder";
             this.openGameSettingsFolderToolStripMenuItem.Click += new System.EventHandler(this.OpenGameSettingsFolder);
             // 
@@ -273,9 +265,11 @@
             this.modListView.AllColumns.Add(this.columnAchivements);
             this.modListView.AllColumns.Add(this.columnSize);
             this.modListView.AllColumns.Add(this.columnFiles);
+            this.modListView.AllColumns.Add(this.columnHighlight);
             this.modListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.modListView.BackColor = System.Drawing.SystemColors.Window;
             this.modListView.CellEditUseWholeCell = false;
             this.modListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnEnabled,
@@ -287,7 +281,8 @@
             this.columnWorkshop,
             this.columnAchivements,
             this.columnSize,
-            this.columnFiles});
+            this.columnFiles,
+            this.columnHighlight});
             this.modListView.Cursor = System.Windows.Forms.Cursors.Default;
             this.modListView.FullRowSelect = true;
             this.modListView.GridLines = true;
@@ -357,7 +352,7 @@
             this.columnConflicts.AspectName = "Conflicts";
             this.columnConflicts.MaximumWidth = 100;
             this.columnConflicts.MinimumWidth = 100;
-            this.columnConflicts.Text = "!";
+            this.columnConflicts.Text = "CONFLICTS";
             this.columnConflicts.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.columnConflicts.ToolTipText = "Detected Conflicts";
             this.columnConflicts.Width = 100;
@@ -391,6 +386,11 @@
             this.columnFiles.AspectName = "FileCount";
             this.columnFiles.Text = "FILES";
             // 
+            // columnHighlight
+            // 
+            this.columnHighlight.AspectName = "Highlight";
+            this.columnHighlight.Width = 0;
+            // 
             // buttonApply
             // 
             this.buttonApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -411,7 +411,7 @@
             this.openFolderToolStripMenuItem,
             this.openArchiveToolStripMenuItem});
             this.contextMenuStripModListView.Name = "contextMenuStripModListView";
-            this.contextMenuStripModListView.Size = new System.Drawing.Size(197, 120);
+            this.contextMenuStripModListView.Size = new System.Drawing.Size(197, 98);
             // 
             // enableSelectedToolStripMenuItem
             // 
@@ -572,12 +572,12 @@
         private System.ComponentModel.BackgroundWorker BackgroundWorker;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem ResetProfile;
-        private System.Windows.Forms.ToolStripMenuItem checkConflictsToolStripMenuItem;
         private BrightIdeasSoftware.OLVColumn columnSize;
         private BrightIdeasSoftware.OLVColumn columnFiles;
         private System.Windows.Forms.ToolStripMenuItem openArchiveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openGameSettingsFolderToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private BrightIdeasSoftware.OLVColumn columnHighlight;
     }
 }
 

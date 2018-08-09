@@ -69,7 +69,6 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Mod.cs" />
-    <Compile Include="ModFiles.cs" />
     <Compile Include="ModListView.cs">
       <SubType>Form</SubType>
     </Compile>

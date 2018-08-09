@@ -50,8 +50,11 @@ namespace Universal_Mod_Organizer
         // List with all the mods loaded and contaning the all required data
         private List<Mod> modList = new List<Mod>();
 
-        // User made changes TODO
+        // User made changes
         private bool unsavedChanges = false;
+
+        // We need to know when we have loaded all the mods. Used for cell format events.
+        private bool modLoadComplete = false;
 
         public BaseForm()
         {
@@ -608,39 +611,21 @@ namespace Universal_Mod_Organizer
             }
         }
 
-        private void CheckAchievementStatus(object sender, EventArgs e)
+        private void CheckAchievementAndConflictStatus(object sender, EventArgs e)
         {
-            BackgroundWorker.RunWorkerAsync("achievement");
-        }
-
-        private void CheckModConflictStatus(object sender, EventArgs e)
-        {
-            BackgroundWorker.RunWorkerAsync("modconflicts");
+            BackgroundWorker.RunWorkerAsync();
         }
 
         private void BackgroundWorkderDoWork(object sender, DoWorkEventArgs e)
         {
-            if (e.Argument.Equals("achievement"))
+            for (int i = 0; i < modList.Count; i++)
             {
-                for (int i = 0; i < modList.Count; i++)
-                {
-                    BackgroundWorker.ReportProgress((int)Math.Round(((double)i / 100) * modList.Count, 0));
-                    modList[i].GetAchievements();
-                }
-
-                BackgroundWorker.ReportProgress(0);
+                BackgroundWorker.ReportProgress((int)Math.Round(((double)i / 100) * modList.Count, 0));
+                modList[i].GetAchievements();
             }
 
-            if (e.Argument.Equals("modconflicts"))
-            {
-                for (int i = 0; i < modList.Count; i++)
-                {
-                    BackgroundWorker.ReportProgress((int)Math.Round(((double)i / 100) * modList.Count, 0));
-                    modList[i].GetConflicts();
-                }
-
-                BackgroundWorker.ReportProgress(0);
-            }
+            GetAllConflicts();
+            BackgroundWorker.ReportProgress(0);
         }
 
         private void BackgroundWorkderProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -666,7 +651,9 @@ namespace Universal_Mod_Organizer
             // Ask if opening too many.
             if (modListView.SelectedIndices.Count > 5)
             {
+#pragma warning disable S1066 // Collapsible "if" statements should be merged
                 if (MessageBox.Show("There are more than " + modListView.SelectedIndices.Count + " entries to open, you are sure?", string.Empty, MessageBoxButtons.YesNo) == DialogResult.No)
+#pragma warning restore S1066 // Collapsible "if" statements should be merged
                 {
                     return;
                 }
@@ -707,14 +694,43 @@ namespace Universal_Mod_Organizer
             }
         }
 
-        private void TEST()
+        private void GetAllConflicts()
         {
-            //  modList[0].ModFiles.Intersect
+            // Parse each mod.
+            for (int baseMod = 0; baseMod < modList.Count; baseMod++)
+            {
+                // Parse each mod on to compare with previous.
+                for (int otherMod = 0; otherMod < modList.Count; otherMod++)
+                {
+                    if (baseMod == otherMod)
+                    {
+                        continue;
+                    }
+
+                    var conflictingFilesResult = modList[baseMod].ModFiles.Intersect(modList[otherMod].ModFiles);
+
+                    // Do we have something in that list.
+                    if (conflictingFilesResult.Any())
+                    {
+                        // Remove existing key in dictionary if it exists.
+                        if (modList[baseMod].ModConflicts.ContainsKey(modList[otherMod].UID))
+                        {
+                            modList[baseMod].ModConflicts.Remove(modList[otherMod].UID);
+                        }
+
+                        var conflictingFileList = new List<string>();
+
+                        foreach (var item in conflictingFilesResult)
+                        {
+                            conflictingFileList.Add(item);
+                        }
+
+                        // Add new dictionary key with conflicing Mod Filename and new list.
+                        modList[baseMod].ModConflicts.Add(modList[otherMod].UID, conflictingFileList);
+                        modList[baseMod].Conflicts = modList[baseMod].ModConflicts.Count;
+                    }
+                }
+            }
         }
     }
 }
-
-/* TODO:
- * http://csharphelper.com/blog/2014/07/compare-directories-in-c/
- * https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/how-to-compare-the-contents-of-two-folders-linq
- * */

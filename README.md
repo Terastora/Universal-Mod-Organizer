@@ -60,3 +60,9 @@ v0.8-alpha:
 - FEATURE: Changed order prefix in the name so any disabled or updated mod by the author stays on top
 - FEATURE: Mod Size and File Count (after you do something in action). TODO: Keep data in settings.
 - Minor Changes
+
+v0.9-alpha:
+- More refactoring
+- FEATURE: Mod Size and File Count. Works as intended.
+- FEATURE: Mod Conflict detection. Highlight conflicting mods if any.
+- TODO: Conflict report. Conflict file count.
