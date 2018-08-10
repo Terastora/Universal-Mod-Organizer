@@ -340,7 +340,7 @@ namespace Universal_Mod_Organizer
             SettingsSave();
         }
 
-        private void ProfileAddSelect(object sender, EventArgs e)
+        private void ProfileAddOrCopySelect(object sender, EventArgs e)
         {
             // Laziness...
             var isCopy = ((ToolStripMenuItem)sender).Name.Equals("ProfileCopy");
@@ -362,6 +362,7 @@ namespace Universal_Mod_Organizer
                 if (isCopy)
                 {
                     // Try get existing mod list from current profile (the one we make copy from).
+                    Console.WriteLine("iscopy new profile : {0}, old: {1}", newProfile, currentProfile);
                     globalProfiles[currentGame].TryGetValue(currentProfile, out List<string> profileModsList);
                     globalProfiles[currentGame].Add(newProfile, profileModsList);
                 }
@@ -372,6 +373,8 @@ namespace Universal_Mod_Organizer
                 }
 
                 currentProfile = newProfile;
+                Console.WriteLine("current profile is {0}", currentProfile);
+
                 SetComboBoxActiveProfile();
                 ApplyProfileData();
             }
@@ -620,7 +623,7 @@ namespace Universal_Mod_Organizer
         {
             for (int i = 0; i < modList.Count; i++)
             {
-                BackgroundWorker.ReportProgress((int)Math.Round(((double)i / 100) * modList.Count, 0));
+                BackgroundWorker.ReportProgress(Math.Min((int)Math.Round(((double)i * 100) / modList.Count), 100));
                 modList[i].GetAchievements();
             }
 

@@ -153,14 +153,14 @@
             this.ProfileAdd.Name = "ProfileAdd";
             this.ProfileAdd.Size = new System.Drawing.Size(154, 22);
             this.ProfileAdd.Text = "Add Profile";
-            this.ProfileAdd.Click += new System.EventHandler(this.ProfileAddSelect);
+            this.ProfileAdd.Click += new System.EventHandler(this.ProfileAddOrCopySelect);
             // 
             // ProfileCopy
             // 
             this.ProfileCopy.Name = "ProfileCopy";
             this.ProfileCopy.Size = new System.Drawing.Size(154, 22);
             this.ProfileCopy.Text = "Copy Profile";
-            this.ProfileCopy.Click += new System.EventHandler(this.ProfileAddSelect);
+            this.ProfileCopy.Click += new System.EventHandler(this.ProfileAddOrCopySelect);
             // 
             // ProfileDelete
             // 
@@ -238,6 +238,7 @@
             // 
             // labelSearch
             // 
+            this.labelSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.labelSearch.Location = new System.Drawing.Point(-1, 534);
             this.labelSearch.Name = "labelSearch";
             this.labelSearch.Size = new System.Drawing.Size(42, 22);
@@ -247,6 +248,7 @@
             // 
             // textBoxSearch
             // 
+            this.textBoxSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.textBoxSearch.Location = new System.Drawing.Point(43, 536);
             this.textBoxSearch.Name = "textBoxSearch";
             this.textBoxSearch.Size = new System.Drawing.Size(130, 22);

@@ -176,7 +176,7 @@ namespace Universal_Mod_Organizer
             if (e.Button == MouseButtons.Left)
             {
 #pragma warning disable S1066 // Collapsible "if" statements should be merged
-                if (modLoadComplete && modListView.SelectedItems.Count > 0 && modList.Count > 0)
+                if (modLoadComplete && modListView.SelectedItems.Count == 1 && modList.Count > 0)
 #pragma warning restore S1066 // Collapsible "if" statements should be merged
                 {
                     var selectedIndex = modListView.SelectedIndex;
@@ -408,3 +408,8 @@ namespace Universal_Mod_Organizer
         }
     }
 }
+/* TODO:
+ * BUGS:
+ * Click in listview buildlistview and flickers screens
+ * Disabled mods stay down on profile change breaks order.
+ * */
